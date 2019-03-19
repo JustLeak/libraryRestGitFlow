@@ -2,10 +2,10 @@ package by.intexsoft.restlibrary.service;
 
 import by.intexsoft.restlibrary.model.Client;
 import by.intexsoft.restlibrary.model.LibraryCard;
+import by.intexsoft.restlibrary.model.dao.api.ICardDAO;
+import by.intexsoft.restlibrary.model.dao.api.IClientDAO;
 import by.intexsoft.restlibrary.model.dto.ClientDTO;
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
-import by.intexsoft.restlibrary.repository.api.ICardRepo;
-import by.intexsoft.restlibrary.repository.api.IClientRepo;
 import by.intexsoft.restlibrary.service.api.IClientService;
 import by.intexsoft.restlibrary.service.api.ICrudService;
 import by.intexsoft.restlibrary.util.DTOUtil;
@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClientService implements IClientService, ICrudService<Client, Long> {
-    private final IClientRepo clientRepo;
+    private final IClientDAO clientRepo;
 
-    private final ICardRepo cardRepo;
+    private final ICardDAO cardRepo;
 
     @Autowired
-    public ClientService(IClientRepo clientRepo, ICardRepo cardRepo) {
+    public ClientService(IClientDAO clientRepo, ICardDAO cardRepo) {
         this.clientRepo = clientRepo;
         this.cardRepo = cardRepo;
     }
@@ -33,7 +33,6 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     public ClientDTO generateAndSaveClient() {
         Client client = Client.random();
         clientRepo.create(client);
-
         return DTOUtil.clientToDTO(client);
     }
 
@@ -103,7 +102,6 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     @Override
     public Optional<ClientDTO> saveClient(Client client) {
         clientRepo.create(client);
-
         return Optional.of(client).map(DTOUtil::clientToDTO);
     }
 }

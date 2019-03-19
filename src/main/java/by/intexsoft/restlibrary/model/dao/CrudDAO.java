@@ -1,6 +1,6 @@
-package by.intexsoft.restlibrary.repository;
+package by.intexsoft.restlibrary.model.dao;
 
-import by.intexsoft.restlibrary.repository.api.ICrudRepo;
+import by.intexsoft.restlibrary.model.dao.api.ICrudDAO;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 
-public abstract class CrudRepo<T, K extends Serializable> implements ICrudRepo<T, K> {
+public abstract class CrudDAO<T, K extends Serializable> implements ICrudDAO<T, K> {
     private Class<T> clazz;
 
     @Autowired
     private SessionFactory sessionFactory;
 
-    public CrudRepo(@NonNull Class<T> clazz) {
+    public CrudDAO(@NonNull Class<T> clazz) {
         this.clazz = clazz;
     }
 
@@ -34,24 +34,20 @@ public abstract class CrudRepo<T, K extends Serializable> implements ICrudRepo<T
     @Override
     public Optional<T> getOne(@NonNull K id) {
         String hql = "FROM " + clazz.getName() + " c WHERE c.id = :id";
-
         Session session = openSession();
         Query<T> query = session.createQuery(hql, clazz);
         query.setParameter("id", id);
         Optional<T> resultOptional = query.uniqueResultOptional();
         session.close();
-
         return resultOptional;
     }
 
     @Override
     public List<T> getAll() {
         String hql = "FROM " + clazz.getName();
-
         Session session = openSession();
         List<T> resultList = session.createQuery(hql, clazz).getResultList();
         session.close();
-
         return resultList;
     }
 

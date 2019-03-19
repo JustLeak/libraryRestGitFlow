@@ -1,10 +1,9 @@
 package by.intexsoft.restlibrary.service;
 
 import by.intexsoft.restlibrary.model.LibraryCard;
+import by.intexsoft.restlibrary.model.dao.api.ICardDAO;
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
-import by.intexsoft.restlibrary.repository.api.ICardRepo;
 import by.intexsoft.restlibrary.service.api.ICardService;
-import by.intexsoft.restlibrary.service.api.ICrudService;
 import by.intexsoft.restlibrary.util.DTOUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,12 +13,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class CardService implements ICardService, ICrudService<LibraryCard, Long> {
+public class CardService implements ICardService {
 
-    private final ICardRepo cardRepo;
+    private final ICardDAO cardRepo;
 
     @Autowired
-    public CardService(ICardRepo cardRepo) {
+    public CardService(ICardDAO cardRepo) {
         this.cardRepo = cardRepo;
     }
 

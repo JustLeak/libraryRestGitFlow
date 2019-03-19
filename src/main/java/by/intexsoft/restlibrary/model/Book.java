@@ -1,6 +1,6 @@
 package by.intexsoft.restlibrary.model;
 
-import by.intexsoft.restlibrary.model.enums.Genre;
+import by.intexsoft.restlibrary.model.enumm.Genre;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
@@ -37,7 +37,4 @@ public class Book {
             joinColumns = @JoinColumn(name = "book_book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_author_id"))
     private Set<Author> authors;
-
-    public Book() {
-    }
 }

@@ -1,10 +1,10 @@
-package by.intexsoft.restlibrary.repository.api;
+package by.intexsoft.restlibrary.model.dao.api;
 
 import by.intexsoft.restlibrary.model.LibraryCard;
 
 import java.util.Optional;
 
-public interface ICardRepo extends ICrudRepo<LibraryCard, Long> {
+public interface ICardDAO extends ICrudDAO<LibraryCard, Long> {
 
     Optional<LibraryCard> findCardByUId(Long id);
 }

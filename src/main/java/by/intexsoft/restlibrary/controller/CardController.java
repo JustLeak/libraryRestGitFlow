@@ -1,4 +1,4 @@
-package by.intexsoft.restlibrary.controllers;
+package by.intexsoft.restlibrary.controller;
 
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 import by.intexsoft.restlibrary.service.api.ICardService;

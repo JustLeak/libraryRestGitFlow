@@ -1,4 +1,4 @@
-package by.intexsoft.restlibrary.controllers;
+package by.intexsoft.restlibrary.controller;
 
 import by.intexsoft.restlibrary.model.Client;
 import by.intexsoft.restlibrary.model.LibraryCard;

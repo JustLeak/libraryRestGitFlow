@@ -24,9 +24,6 @@ public class LibraryCard {
     @OneToMany(mappedBy = "libraryCard", cascade = CascadeType.ALL)
     private Set<Record> records;
 
-    public LibraryCard() {
-    }
-
     public Long getId() {
         return id;
     }

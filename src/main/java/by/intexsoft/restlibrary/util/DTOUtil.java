@@ -11,19 +11,14 @@ public class DTOUtil {
 
         if (client.getName() != null)
             dto.setName(client.getName());
-
         if (client.getLibraryCard() != null && client.getLibraryCard().getId() != null)
             dto.setLibraryCardId(client.getLibraryCard().getId());
-
         if (client.getSurname() != null)
             dto.setSurname(client.getSurname());
-
         if (client.getBirthday() != null)
             dto.setBirthday(client.getBirthday().toString());
-
         if (client.getId() != null)
             dto.setClientId(client.getId());
-
         return dto;
     }
 
@@ -32,10 +27,8 @@ public class DTOUtil {
 
         if (libraryCard.getId() != null)
             dto.setLibraryCardId(libraryCard.getId());
-
         if (libraryCard.getClient() != null && libraryCard.getClient().getId() != null)
             dto.setClientId(libraryCard.getClient().getId());
-
         return dto;
     }
 }

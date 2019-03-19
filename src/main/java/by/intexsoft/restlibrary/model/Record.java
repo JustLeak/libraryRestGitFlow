@@ -27,7 +27,4 @@ public class Record {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "book_id")
     private Book book;
-
-    public Record() {
-    }
 }

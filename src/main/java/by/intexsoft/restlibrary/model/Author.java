@@ -15,7 +15,4 @@ public class Author extends Person {
             joinColumns = @JoinColumn(name = "author_author_id"),
             inverseJoinColumns = @JoinColumn(name = "book_book_id"))
     private Set<Book> books;
-
-    public Author() {
-    }
 }
