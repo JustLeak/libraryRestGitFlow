@@ -1,14 +1,13 @@
 package by.intexsoft.restlibrary.controller;
 
+import by.intexsoft.restlibrary.exception.ServiceException;
 import by.intexsoft.restlibrary.model.Client;
-import by.intexsoft.restlibrary.model.LibraryCard;
 import by.intexsoft.restlibrary.model.dto.ClientDTO;
-import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
+import by.intexsoft.restlibrary.model.dto.MultiResponseList;
+import by.intexsoft.restlibrary.model.dto.SingleResponse;
 import by.intexsoft.restlibrary.service.api.IClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/clients")
@@ -21,33 +20,88 @@ public class ClientController {
     }
 
     @PostMapping("/new-random")
-    public ClientDTO generateClient() {
-        return clientService.generateAndSaveClient();
+    public SingleResponse<ClientDTO> generateClient() {
+        final String message = "Client not created. ";
+        String reason = "Something was wrong...";
+
+        try {
+            return new SingleResponse<>(clientService.generateAndSaveClient());
+        } catch (Exception e) {
+            return new SingleResponse<>(message + reason);
+        } finally {
+            //TODO логировать message
+        }
     }
 
     @PostMapping
-    public ClientDTO newClient(@RequestBody Client newClient) {
-        return clientService.saveClient(newClient).orElse(null);
-    }
+    public SingleResponse<ClientDTO> newClient(@RequestBody Client newClient) {
+        final String message = "Client not created. ";
+        String reason = "Something was wrong...";
 
-    @PutMapping("/{id}/register-card")
-    public LibraryCardDTO registerCard(@RequestBody LibraryCard newCard, @PathVariable Long id) {
-        System.out.println(newCard.getStartDate());
-        return clientService.registerCardByClientId(id, newCard).orElse(null);
+        try {
+            return new SingleResponse<>(clientService.saveClient(newClient));
+        } catch (ServiceException e) {
+            if (e.getCause() == null)
+                reason = e.getMessage();
+
+            return new SingleResponse<>(message + reason);
+        } catch (Exception e) {
+            return new SingleResponse<>(message + reason);
+        } finally {
+            //TODO логировать message
+        }
     }
 
     @GetMapping
-    public List<ClientDTO> getClients() {
-        return clientService.getAllClientsDTO();
+    public MultiResponseList<ClientDTO> getClients() {
+        final String message = "Can't display clients. ";
+        String reason = "Something was wrong...";
+
+        try {
+            return new MultiResponseList<>(clientService.getAllClientsDTO());
+        } catch (Exception e) {
+            return new MultiResponseList<>(message + reason);
+        } finally {
+            //TODO логировать message
+        }
     }
 
     @GetMapping("/{id}")
-    public ClientDTO getClient(@PathVariable Long id) {
-        return clientService.getClientDTOById(id).orElse(null);
+    public SingleResponse<ClientDTO> getClient(@PathVariable Long id) {
+        final String message = "Client not found. ";
+        String reason = "Something was wrong...";
+
+        try {
+            return new SingleResponse<>(clientService.getClientDTOById(id));
+        } catch (ServiceException e) {
+            if (e.getCause() == null)
+                reason = e.getMessage();
+
+            return new SingleResponse<>(message + reason);
+        } catch (Exception e) {
+            return new SingleResponse<>(message + reason);
+        } finally {
+            //TODO логировать message
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteClient(@PathVariable Long id) {
-        clientService.delete(id);
+    public String deleteClient(@PathVariable Long id) {
+        final String message = "Client not deleted. ";
+        String reason = "Something was wrong...";
+
+        try {
+            clientService.delete(id);
+            return null;
+        } catch (ServiceException e) {
+            if (e.getCause() == null)
+                reason = e.getMessage();
+
+            return message + reason;
+        } catch (Exception e) {
+            return message + reason;
+        } finally {
+            //TODO логировать message
+        }
     }
 }

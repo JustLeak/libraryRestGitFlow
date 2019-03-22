@@ -1,20 +1,23 @@
 package by.intexsoft.restlibrary.service.api;
 
+import by.intexsoft.restlibrary.exception.ServiceException;
+
 import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
 
 public interface ICrudService<T, K extends Serializable> {
 
-    Optional<T> getOne(K id);
+    T getOne(K id) throws ServiceException;
 
     List<T> getAll();
 
-    T create(T entity);
+    T create(T entity) throws ServiceException;
 
-    T update(T entity);
+    T update(T entity) throws ServiceException;
 
-    void delete(T entity);
+    T saveOrUpdate(T entity) throws ServiceException;
 
-    void delete(K id);
+    void delete(T entity) throws ServiceException;
+
+    void delete(K id) throws ServiceException;
 }

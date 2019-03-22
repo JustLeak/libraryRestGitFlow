@@ -1,107 +1,119 @@
 package by.intexsoft.restlibrary.service;
 
+import by.intexsoft.restlibrary.exception.ServiceException;
 import by.intexsoft.restlibrary.model.Client;
-import by.intexsoft.restlibrary.model.LibraryCard;
-import by.intexsoft.restlibrary.model.dao.api.ICardDAO;
 import by.intexsoft.restlibrary.model.dao.api.IClientDAO;
 import by.intexsoft.restlibrary.model.dto.ClientDTO;
-import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 import by.intexsoft.restlibrary.service.api.IClientService;
 import by.intexsoft.restlibrary.service.api.ICrudService;
 import by.intexsoft.restlibrary.util.DTOUtil;
+import by.intexsoft.restlibrary.util.ServiceValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ClientService implements IClientService, ICrudService<Client, Long> {
-    private final IClientDAO clientRepo;
-
-    private final ICardDAO cardRepo;
+    private final IClientDAO clientDAO;
 
     @Autowired
-    public ClientService(IClientDAO clientRepo, ICardDAO cardRepo) {
-        this.clientRepo = clientRepo;
-        this.cardRepo = cardRepo;
+    public ClientService(IClientDAO clientDAO) {
+        this.clientDAO = clientDAO;
     }
 
     @Override
-    public ClientDTO generateAndSaveClient() {
-        Client client = Client.random();
-        clientRepo.create(client);
-        return DTOUtil.clientToDTO(client);
-    }
-
-    @Override
-    public Optional<Client> getOne(Long id) {
-        return clientRepo.getOne(id);
+    public Client getOne(Long id) throws ServiceException {
+        ServiceValidator.isValidIdOrThrow(id);
+        return clientDAO.getOne(id).orElseThrow(() ->
+                new ServiceException("Client does not exists."));
     }
 
     @Override
     public List<Client> getAll() {
-        return clientRepo.getAll();
+        return clientDAO.getAll();
     }
 
     @Override
-    public Client create(Client entity) {
-        return clientRepo.create(entity);
+    public Client create(Client entity) throws ServiceException {
+        ServiceValidator.isValidClientOrThrow(entity);
+        return clientDAO.create(entity);
     }
 
     @Override
-    public Client update(Client entity) {
-        return clientRepo.update(entity);
+    public Client update(Client entity) throws ServiceException {
+        ServiceValidator.isValidClientOrThrow(entity);
+        ServiceValidator.isValidIdOrThrow(entity.getId());
+        return clientDAO.update(entity);
     }
 
     @Override
-    public void delete(Client entity) {
-        clientRepo.delete(entity);
+    public Client saveOrUpdate(Client entity) throws ServiceException {
+        if (entity.getId() != null)
+            throw new ServiceException("Client id must be null.", new IllegalArgumentException("Client id = " + entity.getId() + "."));
+
+        ServiceValidator.isValidClientOrThrow(entity);
+        return clientDAO.saveOrUpdate(entity);
     }
 
     @Override
-    public void delete(Long id) {
-        clientRepo.delete(id);
+    public void delete(Client entity) throws ServiceException {
+        if (entity == null)
+            throw new ServiceException("Client must be not null.", new NullPointerException("Client object is null."));
+
+        ServiceValidator.isValidIdOrThrow(entity.getId());
+        clientDAO.delete(entity);
     }
 
     @Override
-    public Optional<LibraryCardDTO> registerCardByClientId(Long clientId, LibraryCard newCard) {
-        Client client;
-
-        try {
-            client = clientRepo.getOne(clientId).orElseThrow();
-        } catch (NoSuchElementException e) {
-            e.printStackTrace();
-            System.out.println("ClientService registerCardByClientId(Long id, LibraryCard newCard). " +
-                    "Unable to register card to user. " + e.getMessage() + "(user with uId = " + clientId + ")");
-            return Optional.empty();
-        }
-
-        return cardRepo.findCardByUId(clientId)
-                .map(DTOUtil::cardToDTO)
-                .or(() -> {
-                    newCard.setClient(client);
-                    return Optional.of(DTOUtil.cardToDTO(cardRepo.saveOrUpdate(newCard)));
-                });
+    public void delete(Long id) throws ServiceException {
+        ServiceValidator.isValidIdOrThrow(id);
+        clientDAO.delete(id);
     }
 
     @Override
     public List<ClientDTO> getAllClientsDTO() {
-        return getAll().stream()
-                .map(DTOUtil::clientToDTO)
-                .collect(Collectors.toList());
+        try {
+            return getAll().stream()
+                    .map(DTOUtil::clientToDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            //TODO логировать stacktrace
+            throw e;
+        }
     }
 
     @Override
-    public Optional<ClientDTO> getClientDTOById(Long clientId) {
-        return getOne(clientId).map(DTOUtil::clientToDTO);
+    public ClientDTO generateAndSaveClient() {
+        try {
+            Client client = Client.random();
+            clientDAO.create(client);
+            return DTOUtil.clientToDTO(client);
+        } catch (Exception e) {
+            //TODO логировать stacktrace
+            throw e;
+        }
     }
 
     @Override
-    public Optional<ClientDTO> saveClient(Client client) {
-        clientRepo.create(client);
-        return Optional.of(client).map(DTOUtil::clientToDTO);
+    public ClientDTO getClientDTOById(Long clientId) throws ServiceException {
+        try {
+            return DTOUtil.clientToDTO(getOne(clientId));
+        } catch (Exception e) {
+            //TODO логировать stacktrace
+            throw e;
+        }
+    }
+
+    @Override
+    public ClientDTO saveClient(Client client) throws ServiceException {
+        try {
+            create(client);
+            return DTOUtil.clientToDTO(client);
+        } catch (Exception e) {
+            //TODO логировать stacktrace
+            throw e;
+        }
     }
 }
