@@ -1,4 +1,4 @@
-package by.intexsoft.restlibrary.model.dto;
+package by.intexsoft.restlibrary.model.response;
 
 public class SingleResponse<T> {
     private T content;

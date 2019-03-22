@@ -1,4 +1,4 @@
-package by.intexsoft.restlibrary.model.dto;
+package by.intexsoft.restlibrary.model.response;
 
 import java.util.List;
 
