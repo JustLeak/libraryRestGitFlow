@@ -7,6 +7,14 @@ public class ClientDTO {
     private String surname;
     private String birthday;
 
+
+    public ClientDTO() {
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
     public void setClientId(Long clientId) {
         this.clientId = clientId;
     }

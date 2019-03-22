@@ -5,7 +5,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -19,7 +18,7 @@ public abstract class CrudDAO<T, K extends Serializable> implements ICrudDAO<T, 
     @Autowired
     private SessionFactory sessionFactory;
 
-    public CrudDAO(@NonNull Class<T> clazz) {
+    public CrudDAO(Class<T> clazz) {
         this.clazz = clazz;
     }
 
@@ -32,7 +31,7 @@ public abstract class CrudDAO<T, K extends Serializable> implements ICrudDAO<T, 
     }
 
     @Override
-    public Optional<T> getOne(@NonNull K id) {
+    public Optional<T> getOne(K id) {
         String hql = "FROM " + clazz.getName() + " c WHERE c.id = :id";
         Session session = openSession();
         Query<T> query = session.createQuery(hql, clazz);
@@ -53,7 +52,7 @@ public abstract class CrudDAO<T, K extends Serializable> implements ICrudDAO<T, 
 
     @Override
     @Transactional
-    public T create(@NonNull T entity) {
+    public T create(T entity) {
         getCurrentSession().persist(entity);
         return entity;
     }
@@ -67,20 +66,20 @@ public abstract class CrudDAO<T, K extends Serializable> implements ICrudDAO<T, 
 
     @Override
     @Transactional
-    public T update(@NonNull T entity) {
+    public T update(T entity) {
         getCurrentSession().update(entity);
         return entity;
     }
 
     @Override
     @Transactional
-    public void delete(@NonNull T entity) {
+    public void delete(T entity) {
         getCurrentSession().delete(entity);
     }
 
     @Override
     @Transactional
-    public void delete(@NonNull K id) {
+    public void delete(K id) {
         getOne(id).ifPresent(this::delete);
     }
 }

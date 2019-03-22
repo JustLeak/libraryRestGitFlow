@@ -27,8 +27,10 @@ public class DTOUtil {
 
         if (libraryCard.getId() != null)
             dto.setLibraryCardId(libraryCard.getId());
-        if (libraryCard.getClient() != null && libraryCard.getClient().getId() != null)
+        if (libraryCard.getClient().getId() != null)
             dto.setClientId(libraryCard.getClient().getId());
+        if (libraryCard.getStartDate() != null)
+            dto.setStartDate(libraryCard.getStartDate().toString());
         return dto;
     }
 }

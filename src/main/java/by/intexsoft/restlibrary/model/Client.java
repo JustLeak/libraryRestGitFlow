@@ -30,8 +30,4 @@ public class Client extends Person {
     public LibraryCard getLibraryCard() {
         return libraryCard;
     }
-
-    public void setLibraryCard(LibraryCard libraryCard) {
-        this.libraryCard = libraryCard;
-    }
 }
