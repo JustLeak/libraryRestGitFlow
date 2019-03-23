@@ -2,8 +2,8 @@ package by.intexsoft.restlibrary.controller;
 
 import by.intexsoft.restlibrary.exception.ServiceException;
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
-import by.intexsoft.restlibrary.model.dto.MultiResponseList;
-import by.intexsoft.restlibrary.model.dto.SingleResponse;
+import by.intexsoft.restlibrary.model.response.MultiResponseList;
+import by.intexsoft.restlibrary.model.response.SingleResponse;
 import by.intexsoft.restlibrary.service.api.ICardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,53 +20,66 @@ public class CardController {
 
     @GetMapping
     public MultiResponseList<LibraryCardDTO> getCards() {
-        final String message = "Can't display cards. ";
-        String reason = "Something was wrong...";
+        String message = "Cards were displayed. ";
+        String reason = "";
 
         try {
             return new MultiResponseList<>(cardService.getAllCardsDTO());
         } catch (Exception e) {
+            message = "Can't display cards. ";
+            reason = "Something was wrong...";
             return new MultiResponseList<>(message + reason);
         } finally {
-            //TODO логировать message
+            System.out.println(message + reason);
+            //TODO логировать message + reason
         }
     }
 
     @GetMapping("/{id}")
     public SingleResponse<LibraryCardDTO> getCard(@PathVariable Long id) {
-        final String message = "Library card not found. ";
-        String reason = "Something was wrong...";
+        String message = "Library card was found. ";
+        String reason = "";
 
         try {
             return new SingleResponse<>(cardService.getCardDTOById(id));
         } catch (ServiceException e) {
+            message = "Library card not found. ";
             if (e.getCause() == null)
                 reason = e.getMessage();
+            else reason = "Something was wrong...";
 
             return new SingleResponse<>(message + reason);
         } catch (Exception e) {
+            message = "Library card not found. ";
+            reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            //TODO логировать message
+            System.out.println(message + reason);
+            //TODO логировать message + reason
         }
     }
 
     @PutMapping("/register/{id}")
     public SingleResponse<LibraryCardDTO> registerCardByClientId(@PathVariable Long id) {
-        final String message = "Can't register library card. ";
-        String reason = "Something was wrong...";
+        String message = "Card was registered. ";
+        String reason = "";
 
         try {
             return new SingleResponse<>(cardService.registerCardByClientId(id));
         } catch (ServiceException e) {
+            message = "Can't register library card. ";
             if (e.getCause() == null)
                 reason = e.getMessage();
+            else reason = "Something was wrong...";
 
             return new SingleResponse<>(message + reason);
         } catch (Exception e) {
+            message = "Can't register library card. ";
+            reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            //TODO логировать message
+            System.out.println(message + reason);
+            //TODO логировать message + reason
         }
     }
 }
