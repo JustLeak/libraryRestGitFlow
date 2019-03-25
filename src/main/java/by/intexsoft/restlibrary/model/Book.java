@@ -1,6 +1,6 @@
 package by.intexsoft.restlibrary.model;
 
-import by.intexsoft.restlibrary.model.enumm.Genre;
+import by.intexsoft.restlibrary.model.enumeration.Genre;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;

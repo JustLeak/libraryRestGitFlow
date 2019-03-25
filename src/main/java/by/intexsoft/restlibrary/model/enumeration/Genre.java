@@ -1,4 +1,4 @@
-package by.intexsoft.restlibrary.model.enumm;
+package by.intexsoft.restlibrary.model.enumeration;
 
 public enum Genre {
     ACTION, ANTHOLOGY, CLASSIC, COMIC, DETECTIVE, DRAMA, FANTASY,
