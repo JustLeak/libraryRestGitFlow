@@ -8,6 +8,7 @@ import by.intexsoft.restlibrary.service.api.IClientService;
 import by.intexsoft.restlibrary.service.api.ICrudService;
 import by.intexsoft.restlibrary.util.DTOUtil;
 import by.intexsoft.restlibrary.util.ServiceValidator;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClientService implements IClientService, ICrudService<Client, Long> {
+    private static final Logger logger = Logger.getLogger(ClientService.class);
     private final IClientDAO clientDAO;
 
     @Autowired
@@ -79,7 +81,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
                     .map(DTOUtil::clientToDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
@@ -91,7 +93,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
             clientDAO.create(client);
             return DTOUtil.clientToDTO(client);
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
@@ -101,7 +103,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
         try {
             return DTOUtil.clientToDTO(getOne(clientId));
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
@@ -112,7 +114,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
             create(client);
             return DTOUtil.clientToDTO(client);
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }

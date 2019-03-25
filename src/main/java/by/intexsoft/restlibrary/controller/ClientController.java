@@ -6,12 +6,14 @@ import by.intexsoft.restlibrary.model.dto.ClientDTO;
 import by.intexsoft.restlibrary.model.response.MultiResponseList;
 import by.intexsoft.restlibrary.model.response.SingleResponse;
 import by.intexsoft.restlibrary.service.api.IClientService;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/clients")
 public class ClientController {
+    private static final Logger logger = Logger.getLogger(ClientController.class);
     private final IClientService clientService;
 
     @Autowired
@@ -32,6 +34,7 @@ public class ClientController {
             return new SingleResponse<>(message + reason);
         } finally {
             System.out.println(message + reason);
+            logger.info(message + reason);
             //TODO логировать message + reason
         }
     }
@@ -55,6 +58,7 @@ public class ClientController {
             return new SingleResponse<>(message + reason);
         } finally {
             System.out.println(message + reason);
+            logger.info(message + reason);
             //TODO логировать message + reason
         }
     }
@@ -72,6 +76,7 @@ public class ClientController {
             return new MultiResponseList<>(message + reason);
         } finally {
             System.out.println(message + reason);
+            logger.info(message + reason);
             //TODO логировать message + reason
         }
     }
@@ -95,6 +100,7 @@ public class ClientController {
             return new SingleResponse<>(message + reason);
         } finally {
             System.out.println(message + reason);
+            logger.info(message + reason);
             //TODO логировать message + reason
         }
     }
@@ -116,6 +122,7 @@ public class ClientController {
             reason = "Something was wrong...";
         } finally {
             System.out.println(message + reason);
+            logger.info(message + reason);
             //TODO логировать message + reason
             return message + reason;
         }

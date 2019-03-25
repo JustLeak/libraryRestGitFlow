@@ -5,12 +5,14 @@ import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 import by.intexsoft.restlibrary.model.response.MultiResponseList;
 import by.intexsoft.restlibrary.model.response.SingleResponse;
 import by.intexsoft.restlibrary.service.api.ICardService;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cards")
 public class CardController {
+    private static final Logger logger = Logger.getLogger(CardController.class);
     private final ICardService cardService;
 
     @Autowired
@@ -30,8 +32,7 @@ public class CardController {
             reason = "Something was wrong...";
             return new MultiResponseList<>(message + reason);
         } finally {
-            System.out.println(message + reason);
-            //TODO логировать message + reason
+            logger.info(message + reason);
         }
     }
 
@@ -54,8 +55,7 @@ public class CardController {
             reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            System.out.println(message + reason);
-            //TODO логировать message + reason
+            logger.info(message + reason);
         }
     }
 
@@ -78,8 +78,7 @@ public class CardController {
             reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            System.out.println(message + reason);
-            //TODO логировать message + reason
+            logger.info(message + reason);
         }
     }
 }
