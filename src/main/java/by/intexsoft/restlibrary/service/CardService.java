@@ -9,6 +9,7 @@ import by.intexsoft.restlibrary.service.api.ICardService;
 import by.intexsoft.restlibrary.service.api.IClientService;
 import by.intexsoft.restlibrary.util.DTOUtil;
 import by.intexsoft.restlibrary.util.ServiceValidator;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class CardService implements ICardService {
-
+    private static final Logger logger = Logger.getLogger(CardService.class);
     private final ICardDAO cardDAO;
-
     private final IClientService clientService;
 
     @Autowired
@@ -90,7 +90,7 @@ public class CardService implements ICardService {
             card.setClient(client);
             return DTOUtil.cardToDTO(cardDAO.saveOrUpdate(card));
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
@@ -102,7 +102,7 @@ public class CardService implements ICardService {
                     .map(DTOUtil::cardToDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
@@ -112,7 +112,7 @@ public class CardService implements ICardService {
         try {
             return DTOUtil.cardToDTO(getOne(cardId));
         } catch (Exception e) {
-            //TODO логировать stacktrace
+            logger.error("", e);
             throw e;
         }
     }
