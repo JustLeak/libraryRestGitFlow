@@ -88,7 +88,7 @@ public class CardService implements ICardService {
             LibraryCard card = new LibraryCard();
             card.setStartDate(new Date());
             card.setClient(client);
-            return DTOUtil.cardToDTO(cardDAO.saveOrUpdate(card));
+            return DTOUtil.convertCardToDTO(cardDAO.saveOrUpdate(card));
         } catch (Exception e) {
             logger.error("", e);
             throw e;
@@ -99,7 +99,7 @@ public class CardService implements ICardService {
     public List<LibraryCardDTO> getAllCardsDTO() {
         try {
             return getAll().stream()
-                    .map(DTOUtil::cardToDTO)
+                    .map(DTOUtil::convertCardToDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("", e);
@@ -110,7 +110,7 @@ public class CardService implements ICardService {
     @Override
     public LibraryCardDTO getCardDTOById(Long cardId) throws ServiceException {
         try {
-            return DTOUtil.cardToDTO(getOne(cardId));
+            return DTOUtil.convertCardToDTO(getOne(cardId));
         } catch (Exception e) {
             logger.error("", e);
             throw e;

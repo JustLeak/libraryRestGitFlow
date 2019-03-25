@@ -6,7 +6,7 @@ import by.intexsoft.restlibrary.model.dto.ClientDTO;
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 
 public class DTOUtil {
-    public static ClientDTO clientToDTO(Client client) {
+    public static ClientDTO convertClientToDTO(Client client) {
         ClientDTO dto = new ClientDTO();
 
         if (client.getName() != null)
@@ -22,7 +22,7 @@ public class DTOUtil {
         return dto;
     }
 
-    public static LibraryCardDTO cardToDTO(LibraryCard libraryCard) {
+    public static LibraryCardDTO convertCardToDTO(LibraryCard libraryCard) {
         LibraryCardDTO dto = new LibraryCardDTO();
 
         if (libraryCard.getId() != null)

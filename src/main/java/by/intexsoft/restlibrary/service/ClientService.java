@@ -78,7 +78,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     public List<ClientDTO> getAllClientsDTO() {
         try {
             return getAll().stream()
-                    .map(DTOUtil::clientToDTO)
+                    .map(DTOUtil::convertClientToDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("", e);
@@ -91,7 +91,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
         try {
             Client client = Client.random();
             clientDAO.create(client);
-            return DTOUtil.clientToDTO(client);
+            return DTOUtil.convertClientToDTO(client);
         } catch (Exception e) {
             logger.error("", e);
             throw e;
@@ -101,7 +101,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     @Override
     public ClientDTO getClientDTOById(Long clientId) throws ServiceException {
         try {
-            return DTOUtil.clientToDTO(getOne(clientId));
+            return DTOUtil.convertClientToDTO(getOne(clientId));
         } catch (Exception e) {
             logger.error("", e);
             throw e;
@@ -112,7 +112,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     public ClientDTO saveClient(Client client) throws ServiceException {
         try {
             create(client);
-            return DTOUtil.clientToDTO(client);
+            return DTOUtil.convertClientToDTO(client);
         } catch (Exception e) {
             logger.error("", e);
             throw e;
