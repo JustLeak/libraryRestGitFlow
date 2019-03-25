@@ -33,9 +33,7 @@ public class ClientController {
             reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            System.out.println(message + reason);
             logger.info(message + reason);
-            //TODO логировать message + reason
         }
     }
 
@@ -57,9 +55,7 @@ public class ClientController {
             reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            System.out.println(message + reason);
             logger.info(message + reason);
-            //TODO логировать message + reason
         }
     }
 
@@ -75,9 +71,7 @@ public class ClientController {
             reason = "Something was wrong...";
             return new MultiResponseList<>(message + reason);
         } finally {
-            System.out.println(message + reason);
             logger.info(message + reason);
-            //TODO логировать message + reason
         }
     }
 
@@ -99,9 +93,7 @@ public class ClientController {
             reason = "Something was wrong...";
             return new SingleResponse<>(message + reason);
         } finally {
-            System.out.println(message + reason);
             logger.info(message + reason);
-            //TODO логировать message + reason
         }
     }
 
@@ -121,9 +113,7 @@ public class ClientController {
             message = "Client not deleted. ";
             reason = "Something was wrong...";
         } finally {
-            System.out.println(message + reason);
             logger.info(message + reason);
-            //TODO логировать message + reason
             return message + reason;
         }
     }
