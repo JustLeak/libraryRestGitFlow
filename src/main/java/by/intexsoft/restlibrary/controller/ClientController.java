@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/clients")
 public class ClientController {
@@ -23,98 +25,71 @@ public class ClientController {
 
     @PostMapping("/new-random")
     public SingleResponse<ClientDTO> generateClient() {
-        String message = "Client was generated. ";
-        String reason = "";
-
         try {
-            return new SingleResponse<>(clientService.generateAndSaveClient());
+            ClientDTO response = clientService.generateAndSaveClient();
+            logger.info("Client with id = " + response.getClientId() + " has been generated.");
+            return new SingleResponse<>(response);
         } catch (Exception e) {
-            message = "Client not generated. ";
-            reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Client has not been generated. Something was wrong...");
         }
     }
 
     @PostMapping
     public SingleResponse<ClientDTO> newClient(@RequestBody Client newClient) {
-        String message = "Client was created. ";
-        String reason = "";
-
         try {
-            return new SingleResponse<>(clientService.saveClient(newClient));
+            ClientDTO response = clientService.saveClient(newClient);
+            logger.info("Client with id = " + response.getClientId() + " has been created.");
+            return new SingleResponse<>(response);
         } catch (ServiceException e) {
-            message = "Client not created. ";
-            if (e.getCause() == null)
-                reason = e.getMessage();
-            else reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Client has not been created. Illegal input data.");
         } catch (Exception e) {
-            message = "Client not created. ";
-            reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Client has not been created. Something was wrong...");
         }
     }
 
     @GetMapping
     public MultiResponseList<ClientDTO> getClients() {
-        String message = "Clients were displayed. ";
-        String reason = "";
-
         try {
-            return new MultiResponseList<>(clientService.getAllClientsDTO());
+            List<ClientDTO> response = clientService.getAllClientsDTO();
+            logger.info("Clients were shown.");
+            return new MultiResponseList<>(response);
         } catch (Exception e) {
-            message = "Can't display clients. ";
-            reason = "Something was wrong...";
-            return new MultiResponseList<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new MultiResponseList<>("Clients were not shown. Something was wrong...");
         }
     }
 
     @GetMapping("/{id}")
     public SingleResponse<ClientDTO> getClient(@PathVariable Long id) {
-        String message = "Client was found. ";
-        String reason = "";
-
         try {
-            return new SingleResponse<>(clientService.getClientDTOById(id));
+            ClientDTO response = clientService.getClientDTOById(id);
+            logger.info("Client with id = " + response.getClientId() + " has been shown.");
+            return new SingleResponse<>(response);
         } catch (ServiceException e) {
-            message = "Client not found. ";
-            if (e.getCause() == null)
-                reason = e.getMessage();
-            else reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Client has not been found. Illegal input data.");
         } catch (Exception e) {
-            message = "Client not found. ";
-            reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Client has not been found. Something was wrong...");
         }
     }
 
     @DeleteMapping("/{id}")
     public String deleteClient(@PathVariable Long id) {
-        String message = "Client was deleted. ";
-        String reason = "";
-
         try {
             clientService.delete(id);
+            String response = "Client with " + id + " has been deleted.";
+            logger.info(response);
+            return "response";
         } catch (ServiceException e) {
-            message = "Client not deleted. ";
-            if (e.getCause() == null)
-                reason = e.getMessage();
-            else reason = "Something was wrong...";
+            logger.error(e.getMessage(), e);
+            return "Client has not been deleted. Illegal input data.";
         } catch (Exception e) {
-            message = "Client not deleted. ";
-            reason = "Something was wrong...";
-        } finally {
-            logger.info(message + reason);
-            return message + reason;
+            logger.error(e.getMessage(), e);
+            return "Client has not been deleted. Something was wrong.";
         }
     }
 }
