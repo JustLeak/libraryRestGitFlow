@@ -1,7 +1,7 @@
 package by.intexsoft.restlibrary.configuration;
 
 
-import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
@@ -10,6 +10,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Properties;
 
 @Configuration
@@ -26,10 +27,17 @@ public class HibernateConfig {
 
     @Bean
     public DataSource dataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/library_rest_db?serverTimezone=UTC&useSSL=false");
-        dataSource.setUsername("admin");
+        MysqlDataSource dataSource = new MysqlDataSource();
+        try {
+            dataSource.setUseSSL(false);
+            dataSource.setServerTimezone("UTC");
+            dataSource.setAllowPublicKeyRetrieval(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        dataSource.setUrl("jdbc:mysql://localhost:3306/library_rest_db");
+        dataSource.setUser("admin");
         dataSource.setPassword("1111");
         return dataSource;
     }

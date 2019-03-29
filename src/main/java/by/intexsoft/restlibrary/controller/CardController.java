@@ -9,6 +9,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/cards")
 public class CardController {
@@ -22,63 +24,43 @@ public class CardController {
 
     @GetMapping
     public MultiResponseList<LibraryCardDTO> getCards() {
-        String message = "Cards were displayed. ";
-        String reason = "";
-
         try {
-            return new MultiResponseList<>(cardService.getAllCardsDTO());
+            List<LibraryCardDTO> response = cardService.getAllCardsDTO();
+            logger.info("Cards were shown.");
+            return new MultiResponseList<>(response);
         } catch (Exception e) {
-            message = "Can't display cards. ";
-            reason = "Something was wrong...";
-            return new MultiResponseList<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new MultiResponseList<>("Cards were not shown. Something was wrong...");
         }
     }
 
     @GetMapping("/{id}")
     public SingleResponse<LibraryCardDTO> getCard(@PathVariable Long id) {
-        String message = "Library card was found. ";
-        String reason = "";
-
         try {
+            LibraryCardDTO response = cardService.getCardDTOById(id);
+            logger.info("Card with id = " + response.getLibraryCardId() + " has been shown.");
             return new SingleResponse<>(cardService.getCardDTOById(id));
         } catch (ServiceException e) {
-            message = "Library card not found. ";
-            if (e.getCause() == null)
-                reason = e.getMessage();
-            else reason = "Something was wrong...";
-
-            return new SingleResponse<>(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Card has not been found. Illegal input data.");
         } catch (Exception e) {
-            message = "Library card not found. ";
-            reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Card has not been found. Something was wrong...");
         }
     }
 
     @PutMapping("/register/{id}")
     public SingleResponse<LibraryCardDTO> registerCardByClientId(@PathVariable Long id) {
-        String message = "Card was registered. ";
-        String reason = "";
-
         try {
-            return new SingleResponse<>(cardService.registerCardByClientId(id));
+            LibraryCardDTO response = cardService.registerCardByClientId(id);
+            logger.info("Card with id = " + response.getLibraryCardId() + " has been registered.");
+            return new SingleResponse<>(response);
         } catch (ServiceException e) {
-            message = "Can't register library card. ";
-            if (e.getCause() == null)
-                reason = e.getMessage();
-            else reason = "Something was wrong...";
-
-            return new SingleResponse<>(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Card has not been registered. Illegal input data.");
         } catch (Exception e) {
-            message = "Can't register library card. ";
-            reason = "Something was wrong...";
-            return new SingleResponse<>(message + reason);
-        } finally {
-            logger.info(message + reason);
+            logger.error(e.getMessage(), e);
+            return new SingleResponse<>("Card has not been registered. Something was wrong...");
         }
     }
 }
