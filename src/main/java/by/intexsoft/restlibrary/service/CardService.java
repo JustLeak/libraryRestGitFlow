@@ -29,8 +29,9 @@ public class CardService implements ICardService {
 
     @Override
     public LibraryCard getOne(Long id) throws ServiceException {
-        if (!ServiceValidator.isValidId(id))
+        if (!ServiceValidator.isValidId(id)) {
             throw new ServiceException("Illegal library_card_id reference value. Library_card_id = " + id + ".");
+        }
 
         return cardDAO.getOne(id).orElseThrow(() ->
                 new ServiceException("Library card does not exists."));
@@ -50,8 +51,9 @@ public class CardService implements ICardService {
     @Override
     public LibraryCard update(LibraryCard entity) throws ServiceException {
         checkLibraryCard(entity);
-        if (!ServiceValidator.isValidId(entity.getId()))
+        if (!ServiceValidator.isValidId(entity.getId())) {
             throw new ServiceException("Illegal library_card_id reference value. Library_card_id = " + entity.getId() + ".");
+        }
         return cardDAO.update(entity);
     }
 
@@ -63,26 +65,30 @@ public class CardService implements ICardService {
 
     @Override
     public void delete(LibraryCard entity) throws ServiceException {
-        if (entity == null)
+        if (entity == null) {
             throw new ServiceException("LibraryCard object is null.");
+        }
 
-        if (!ServiceValidator.isValidId(entity.getId()))
+        if (!ServiceValidator.isValidId(entity.getId())) {
             throw new ServiceException("Illegal library_card_id reference value. Library_card_id = " + entity.getId() + ".");
+        }
         cardDAO.delete(entity);
     }
 
     @Override
     public void delete(Long id) throws ServiceException {
-        if (!ServiceValidator.isValidId(id))
+        if (!ServiceValidator.isValidId(id)) {
             throw new ServiceException("Illegal library_card_id reference value. Library_card_id = " + id + ".");
+        }
         cardDAO.delete(id);
     }
 
     @Override
     public LibraryCardDTO registerCardByClientId(Long clientId) throws ServiceException {
         Client client = clientService.getOne(clientId);
-        if (client.getLibraryCard() != null)
+        if (client.getLibraryCard() != null) {
             throw new ServiceException("Client already has a card.");
+        }
 
         LibraryCard card = new LibraryCard();
         card.setStartDate(new Date());
@@ -103,10 +109,12 @@ public class CardService implements ICardService {
     }
 
     private void checkLibraryCard(LibraryCard entity) throws ServiceException {
-        if (entity == null)
+        if (entity == null) {
             throw new ServiceException("LibraryCard entity reference is null.");
+        }
 
-        if (!ServiceValidator.isValidLibraryCardRegistrationDate(entity.getStartDate()))
+        if (!ServiceValidator.isValidLibraryCardRegistrationDate(entity.getStartDate())) {
             throw new ServiceException("Illegal registration date.");
+        }
     }
 }

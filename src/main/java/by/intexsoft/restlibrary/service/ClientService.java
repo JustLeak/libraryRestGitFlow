@@ -104,11 +104,14 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     }
 
     private void checkClient(Client entity) throws ServiceException {
-        if (entity == null)
+        if (entity == null) {
             throw new ServiceException("Client entity reference is null.");
-        if (!ServiceValidator.isValidClientName(entity.getName()))
+        }
+        if (!ServiceValidator.isValidClientName(entity.getName())) {
             throw new ServiceException("Illegal client name.");
-        if (!ServiceValidator.isValidClientSurname(entity.getSurname()))
+        }
+        if (!ServiceValidator.isValidClientSurname(entity.getSurname())) {
             throw new ServiceException("Illegal client surname.");
+        }
     }
 }
