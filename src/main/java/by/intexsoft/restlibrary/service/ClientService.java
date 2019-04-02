@@ -75,7 +75,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
         if (!ServiceValidator.isValidId(id)) {
             throw new ServiceException("Illegal client_id value. client_id  = " + id + ".");
         }
-        clientDAO.delete(id);
+        clientDAO.delete(getOne(id));
     }
 
     @Override

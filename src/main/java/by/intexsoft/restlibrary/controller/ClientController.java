@@ -6,6 +6,7 @@ import by.intexsoft.restlibrary.model.dto.ClientDTO;
 import by.intexsoft.restlibrary.model.response.MultiResponseList;
 import by.intexsoft.restlibrary.model.response.SingleResponse;
 import by.intexsoft.restlibrary.service.api.IClientService;
+import by.intexsoft.restlibrary.service.api.ILocalizationService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,79 +18,81 @@ import java.util.List;
 public class ClientController {
     private static final Logger logger = Logger.getLogger(ClientController.class);
     private final IClientService clientService;
+    private final ILocalizationService localeService;
 
     @Autowired
-    public ClientController(IClientService clientService) {
+    public ClientController(IClientService clientService, ILocalizationService localeService) {
         this.clientService = clientService;
+        this.localeService = localeService;
     }
 
     @PostMapping("/new-random")
-    public SingleResponse<ClientDTO> generateClient() {
+    public SingleResponse<ClientDTO> generateClient(@RequestParam(required = false) String lang) {
         try {
             ClientDTO response = clientService.generateAndSaveClient();
-            logger.info("Client with id = " + response.getClientId() + " has been generated.");
+            logger.info(String.format("Client with id = %d has been generated.", response.getClientId()));
             return new SingleResponse<>(response);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>("Client has not been generated. Something was wrong...");
+            return new SingleResponse<>(localeService.getString("clhnbg", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
     @PostMapping
-    public SingleResponse<ClientDTO> newClient(@RequestBody Client newClient) {
+    public SingleResponse<ClientDTO> newClient(@RequestParam(required = false) String lang, @RequestBody Client newClient) {
         try {
             ClientDTO response = clientService.saveClient(newClient);
-            logger.info("Client with id = " + response.getClientId() + " has been created.");
+            logger.info(String.format("Client with id = %d has been created.", response.getClientId()));
             return new SingleResponse<>(response);
         } catch (ServiceException e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>("Client has not been created. Illegal input data.");
+            return new SingleResponse<>(localeService.getString("clhnbc", lang) + " " + localeService.getString("iid", lang));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>("Client has not been created. Something was wrong...");
+            return new SingleResponse<>(localeService.getString("clhnbc", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
     @GetMapping
-    public MultiResponseList<ClientDTO> getClients() {
+    public MultiResponseList<ClientDTO> getClients(@RequestParam(required = false) String lang) {
         try {
             List<ClientDTO> response = clientService.getAllClientsDTO();
-            logger.info("Clients were shown.");
+            logger.info(localeService.getString("Clients were shown.", lang));
             return new MultiResponseList<>(response);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new MultiResponseList<>("Clients were not shown. Something was wrong...");
+            return new MultiResponseList<>(localeService.getString("clwns", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
     @GetMapping("/{id}")
-    public SingleResponse<ClientDTO> getClient(@PathVariable Long id) {
+    public SingleResponse<ClientDTO> getClient(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             ClientDTO response = clientService.getClientDTOById(id);
-            logger.info("Client with id = " + response.getClientId() + " has been shown.");
+            logger.info(String.format("Client with id = %d has been shown.", response.getClientId()));
             return new SingleResponse<>(response);
         } catch (ServiceException e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>("Client has not been found. Illegal input data.");
+            return new SingleResponse<>(localeService.getString("clhnbf", lang) + " " + localeService.getString("iid", lang));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>("Client has not been found. Something was wrong...");
+            return new SingleResponse<>(localeService.getString("clhnbf", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
     @DeleteMapping("/{id}")
-    public String deleteClient(@PathVariable Long id) {
+    public String deleteClient(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             clientService.delete(id);
-            String response = "Client with " + id + " has been deleted.";
+            String response = String.format("Client with id = %d has been deleted.", id);
             logger.info(response);
-            return "response";
+            return response;
         } catch (ServiceException e) {
             logger.error(e.getMessage(), e);
-            return "Client has not been deleted. Illegal input data.";
+            return localeService.getString("clhnbd", lang) + " " + localeService.getString("iid", lang);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return "Client has not been deleted. Something was wrong.";
+            return localeService.getString("clhnbd", lang) + " " + localeService.getString("sww", lang);
         }
     }
 }
