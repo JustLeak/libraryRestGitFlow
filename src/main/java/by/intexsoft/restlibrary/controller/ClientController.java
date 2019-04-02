@@ -1,5 +1,6 @@
 package by.intexsoft.restlibrary.controller;
 
+import by.intexsoft.restlibrary.configuration.annotation.ExceptionLogging;
 import by.intexsoft.restlibrary.exception.ServiceException;
 import by.intexsoft.restlibrary.model.Client;
 import by.intexsoft.restlibrary.model.dto.ClientDTO;
@@ -17,16 +18,17 @@ import java.util.List;
 @RequestMapping("/clients")
 public class ClientController {
     private static final Logger logger = Logger.getLogger(ClientController.class);
-    private final IClientService clientService;
-    private final ILocalizationService localeService;
-
     @Autowired
-    public ClientController(IClientService clientService, ILocalizationService localeService) {
-        this.clientService = clientService;
-        this.localeService = localeService;
+    private  IClientService clientService;
+    @Autowired
+    private  ILocalizationService localeService;
+
+    //Это сделано потому что CGLIB требует пустой конструктор
+    public ClientController() {
     }
 
     @PostMapping("/new-random")
+    @ExceptionLogging
     public SingleResponse<ClientDTO> generateClient(@RequestParam(required = false) String lang) {
         try {
             ClientDTO response = clientService.generateAndSaveClient();
@@ -39,6 +41,7 @@ public class ClientController {
     }
 
     @PostMapping
+    @ExceptionLogging
     public SingleResponse<ClientDTO> newClient(@RequestParam(required = false) String lang, @RequestBody Client newClient) {
         try {
             ClientDTO response = clientService.saveClient(newClient);
@@ -54,6 +57,7 @@ public class ClientController {
     }
 
     @GetMapping
+    @ExceptionLogging
     public MultiResponseList<ClientDTO> getClients(@RequestParam(required = false) String lang) {
         try {
             List<ClientDTO> response = clientService.getAllClientsDTO();
@@ -66,6 +70,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
+    @ExceptionLogging
     public SingleResponse<ClientDTO> getClient(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             ClientDTO response = clientService.getClientDTOById(id);
@@ -81,6 +86,7 @@ public class ClientController {
     }
 
     @DeleteMapping("/{id}")
+    @ExceptionLogging
     public String deleteClient(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             clientService.delete(id);

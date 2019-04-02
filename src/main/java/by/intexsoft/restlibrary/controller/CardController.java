@@ -1,5 +1,6 @@
 package by.intexsoft.restlibrary.controller;
 
+import by.intexsoft.restlibrary.configuration.annotation.ExceptionLogging;
 import by.intexsoft.restlibrary.exception.ServiceException;
 import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 import by.intexsoft.restlibrary.model.response.MultiResponseList;
@@ -16,16 +17,17 @@ import java.util.List;
 @RequestMapping("/cards")
 public class CardController {
     private static final Logger logger = Logger.getLogger(CardController.class);
-    private final ICardService cardService;
-    private final ILocalizationService bundle;
-
     @Autowired
-    public CardController(ICardService cardService, ILocalizationService bundle) {
-        this.cardService = cardService;
-        this.bundle = bundle;
-    }
+    private ICardService cardService;
+    @Autowired
+    private  ILocalizationService bundle;
 
+    //Это сделано потому что CGLIB требует пустой конструктор
+    public CardController() {
+    }
+    
     @GetMapping
+    @ExceptionLogging
     public MultiResponseList<LibraryCardDTO> getCards(@RequestParam(required = false) String lang) {
         try {
             List<LibraryCardDTO> response = cardService.getAllCardsDTO();
@@ -38,6 +40,7 @@ public class CardController {
     }
 
     @GetMapping("/{id}")
+    @ExceptionLogging
     public SingleResponse<LibraryCardDTO> getCard(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             LibraryCardDTO response = cardService.getCardDTOById(id);
@@ -53,6 +56,7 @@ public class CardController {
     }
 
     @PutMapping("/register/{id}")
+    @ExceptionLogging
     public SingleResponse<LibraryCardDTO> registerCardByClientId(@PathVariable Long id, @RequestParam(required = false) String lang) {
         try {
             LibraryCardDTO response = cardService.registerCardByClientId(id);
