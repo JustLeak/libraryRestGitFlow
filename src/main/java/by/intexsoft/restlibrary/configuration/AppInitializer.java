@@ -9,16 +9,13 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
 public class AppInitializer implements WebApplicationInitializer {
-
     @Override
     public void onStartup(ServletContext container) {
-        // Create the 'root' Spring application context
         AnnotationConfigWebApplicationContext rootContext =
                 new AnnotationConfigWebApplicationContext();
 
         rootContext.setConfigLocation("by.intexsoft.restlibrary.configuration");
 
-        // Manage the lifecycle of the root application context
         container.addListener(new ContextLoaderListener(rootContext));
 
         ServletRegistration.Dynamic dispatcher = container
