@@ -16,7 +16,8 @@ public class CardDAO extends CrudDAO<LibraryCard, Long> implements ICardDAO {
         super(LibraryCard.class);
     }
 
-    public Optional<LibraryCard> findCardByUId(Long id) {
+    @Override
+    public Optional<LibraryCard> findByUId(Long id) {
         String hql = "FROM LibraryCard lc WHERE lc.client.id = :id";
         Session session = openSession();
         Query<LibraryCard> query = session.createQuery(hql, LibraryCard.class);

@@ -17,12 +17,12 @@ import java.util.List;
 public class CardController {
     private static final Logger logger = Logger.getLogger(CardController.class);
     private final ICardService cardService;
-    private final ILocalizationService bundle;
+    private final ILocalizationService localeService;
 
     @Autowired
-    public CardController(ICardService cardService, ILocalizationService bundle) {
+    public CardController(ICardService cardService, ILocalizationService localeService) {
         this.cardService = cardService;
-        this.bundle = bundle;
+        this.localeService = localeService;
     }
 
     @GetMapping
@@ -33,7 +33,7 @@ public class CardController {
             return new MultiResponseList<>(response);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new MultiResponseList<>(bundle.getString("crwns", lang) + " " + bundle.getString("sww", lang));
+            return new MultiResponseList<>(localeService.getString("crwns", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
@@ -45,10 +45,10 @@ public class CardController {
             return new SingleResponse<>(cardService.getCardDTOById(id));
         } catch (ServiceException e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>(bundle.getString("crhnbf", lang) + " " + bundle.getString("iid", lang));
+            return new SingleResponse<>(localeService.getString("crhnbf", lang) + " " + localeService.getString("iid", lang));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>(bundle.getString("crhnbf", lang) + " " + bundle.getString("sww", lang));
+            return new SingleResponse<>(localeService.getString("crhnbf", lang) + " " + localeService.getString("sww", lang));
         }
     }
 
@@ -60,10 +60,10 @@ public class CardController {
             return new SingleResponse<>(response);
         } catch (ServiceException e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>(bundle.getString("crhnbr", lang) + " " + bundle.getString("iid", lang));
+            return new SingleResponse<>(localeService.getString("crhnbr", lang) + " " + localeService.getString("iid", lang));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new SingleResponse<>(bundle.getString("crhnbr", lang) + " " + bundle.getString("sww", lang));
+            return new SingleResponse<>(localeService.getString("crhnbr", lang) + " " + localeService.getString("sww", lang));
         }
     }
 }

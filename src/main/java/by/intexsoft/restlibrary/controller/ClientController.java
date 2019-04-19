@@ -57,7 +57,7 @@ public class ClientController {
     public MultiResponseList<ClientDTO> getClients(@RequestParam(required = false) String lang) {
         try {
             List<ClientDTO> response = clientService.getAllClientsDTO();
-            logger.info(localeService.getString("Clients were shown.", lang));
+            logger.info("Clients were shown.");
             return new MultiResponseList<>(response);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -4,7 +4,7 @@ import by.intexsoft.restlibrary.model.enumeration.Genre;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
 import java.util.Set;
 
 @Entity
@@ -19,7 +19,6 @@ public class Book {
     @Column(name = "name")
     private String name;
 
-    @Temporal(value = TemporalType.DATE)
     @Column(name = "release_date")
     private Date releaseDate;
 
@@ -27,14 +26,88 @@ public class Book {
     @Column(name = "genre")
     private Genre genre;
 
-    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Record record;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "book", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private BookAccounting bookAccounting;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(
             name = "books_authors",
             joinColumns = @JoinColumn(name = "book_book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_author_id"))
     private Set<Author> authors;
+
+    public Book(String name, Genre genre, Date releaseDate, Set<Author> authors) {
+        this.name = name;
+        this.releaseDate = releaseDate;
+        this.genre = genre;
+        this.authors = authors;
+    }
+
+    public Book() {
+    }
+
+    public BookAccounting getBookAccounting() {
+        return bookAccounting;
+    }
+
+    public void setBookAccounting(BookAccounting bookAccounting) {
+        this.bookAccounting = bookAccounting;
+    }
+
+    public Set<Author> getAuthors() {
+        return authors;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Date getReleaseDate() {
+        return releaseDate;
+    }
+
+    public Genre getGenre() {
+        return genre;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", releaseDate=" + releaseDate +
+                ", genre=" + genre +
+                ", record=" + record +
+                ", bookAccounting=" + bookAccounting +
+                ", authors=" + authors +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        if (!name.equals(book.name)) return false;
+        return authors.equals(book.authors);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + authors.hashCode();
+        return result;
+    }
 }

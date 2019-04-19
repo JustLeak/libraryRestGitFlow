@@ -34,7 +34,6 @@ public class HibernateConfig {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         dataSource.setUrl("jdbc:mysql://localhost:3306/library_rest_db");
         dataSource.setUser("admin");
         dataSource.setPassword("1111");
@@ -53,6 +52,7 @@ public class HibernateConfig {
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
         hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
         hibernateProperties.setProperty("hibernate.show_sql", "true");
+        hibernateProperties.setProperty("hibernate.format_sql", "true");
         return hibernateProperties;
     }
 }

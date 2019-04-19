@@ -6,8 +6,8 @@ import by.intexsoft.restlibrary.model.dao.api.IClientDAO;
 import by.intexsoft.restlibrary.model.dto.ClientDTO;
 import by.intexsoft.restlibrary.service.api.IClientService;
 import by.intexsoft.restlibrary.service.api.ICrudService;
-import by.intexsoft.restlibrary.util.DTOUtil;
-import by.intexsoft.restlibrary.util.ServiceValidator;
+import by.intexsoft.restlibrary.util.DTOUtils;
+import by.intexsoft.restlibrary.util.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +25,10 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
 
     @Override
     public Client getOne(Long id) throws ServiceException {
-        if (!ServiceValidator.isValidId(id)) {
+        if (!ValidatorUtils.isValidId(id)) {
             throw new ServiceException("Illegal client_id value. client_id  = " + id + ".");
         }
-
-        return clientDAO.getOne(id).orElseThrow(() ->
-                new ServiceException("Client does not exists."));
+        return clientDAO.getOne(id).orElseThrow(() -> new ServiceException("Client does not exists."));
     }
 
     @Override
@@ -47,7 +45,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     @Override
     public Client update(Client entity) throws ServiceException {
         checkClient(entity);
-        if (!ServiceValidator.isValidId(entity.getId())) {
+        if (!ValidatorUtils.isValidId(entity.getId())) {
             throw new ServiceException("Illegal client_id value. client_id  = " + entity.getId() + ".");
         }
         return clientDAO.update(entity);
@@ -64,7 +62,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
         if (entity == null) {
             throw new ServiceException("Client entity reference is null.");
         }
-        if (!ServiceValidator.isValidId(entity.getId())) {
+        if (!ValidatorUtils.isValidId(entity.getId())) {
             throw new ServiceException("Illegal client_id value. client_id  = " + entity.getId() + ".");
         }
         clientDAO.delete(entity);
@@ -72,7 +70,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
 
     @Override
     public void delete(Long id) throws ServiceException {
-        if (!ServiceValidator.isValidId(id)) {
+        if (!ValidatorUtils.isValidId(id)) {
             throw new ServiceException("Illegal client_id value. client_id  = " + id + ".");
         }
         clientDAO.delete(getOne(id));
@@ -81,7 +79,7 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     @Override
     public List<ClientDTO> getAllClientsDTO() {
         return getAll().stream()
-                .map(DTOUtil::convertClientToDTO)
+                .map(DTOUtils::convertClientToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -89,28 +87,28 @@ public class ClientService implements IClientService, ICrudService<Client, Long>
     public ClientDTO generateAndSaveClient() {
         Client client = Client.random();
         clientDAO.create(client);
-        return DTOUtil.convertClientToDTO(client);
+        return DTOUtils.convertClientToDTO(client);
     }
 
     @Override
     public ClientDTO getClientDTOById(Long clientId) throws ServiceException {
-        return DTOUtil.convertClientToDTO(getOne(clientId));
+        return DTOUtils.convertClientToDTO(getOne(clientId));
     }
 
     @Override
     public ClientDTO saveClient(Client client) throws ServiceException {
         create(client);
-        return DTOUtil.convertClientToDTO(client);
+        return DTOUtils.convertClientToDTO(client);
     }
 
     private void checkClient(Client entity) throws ServiceException {
         if (entity == null) {
             throw new ServiceException("Client entity reference is null.");
         }
-        if (!ServiceValidator.isValidClientName(entity.getName())) {
+        if (!ValidatorUtils.isValidName(entity.getName())) {
             throw new ServiceException("Illegal client name.");
         }
-        if (!ServiceValidator.isValidClientSurname(entity.getSurname())) {
+        if (!ValidatorUtils.isValidName(entity.getSurname())) {
             throw new ServiceException("Illegal client surname.");
         }
     }

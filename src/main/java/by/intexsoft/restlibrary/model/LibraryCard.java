@@ -1,7 +1,7 @@
 package by.intexsoft.restlibrary.model;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
 import java.util.Set;
 
 @Entity
@@ -14,7 +14,6 @@ public class LibraryCard {
     private Long id;
 
     @Column(name = "start_date")
-    @Temporal(value = TemporalType.DATE)
     private Date startDate;
 
     @OneToOne(cascade = CascadeType.ALL)

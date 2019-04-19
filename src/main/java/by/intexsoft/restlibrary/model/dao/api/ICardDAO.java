@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface ICardDAO extends ICrudDAO<LibraryCard, Long> {
 
-    Optional<LibraryCard> findCardByUId(Long id);
+    Optional<LibraryCard> findByUId(Long id);
 }
