@@ -77,7 +77,7 @@ public class BookService implements IBookService {
         List<Author> authorsFromDb = authorDAO.findAllByNamesAndSurnamesNative(authorNameSet, authorSurnameSet);
         books.stream()
                 .flatMap(book -> book.getAuthors().stream())
-                .forEach(author -> ifPresentSetId(authorsFromDb, author));
+                .forEach(author -> findAndSetId(author, authorsFromDb));
     }
 
     private void mergeWithDatabaseAccounting(Set<Book> books) {
@@ -164,7 +164,7 @@ public class BookService implements IBookService {
 
     }
 
-    private void ifPresentSetId(List<Author> authorsFromDB, Author authorFromFile) {
+    private void findAndSetId(Author authorFromFile, List<Author> authorsFromDB) {
         int index = authorsFromDB.indexOf(authorFromFile);
         if (index == -1) {
             throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
