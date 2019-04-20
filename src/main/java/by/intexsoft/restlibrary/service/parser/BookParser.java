@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import java.sql.Date;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,22 +61,12 @@ public class BookParser implements IBookParser {
         if (bookBuffer == null) {
             throw new IllegalArgumentException("BookBuffer must be not null.");
         }
-        String name = bookBuffer.getName();
-        if (!ValidatorUtils.isValidBookName(bookBuffer.getName())) {
-            throw new IllegalArgumentException("Illegal book name. Name: " + name + ".");
-        }
-        name = name.trim();
-        Genre genre = parseGenreFromDescription(bookBuffer.getDescription());
-        Date release = null;
-        if (bookBuffer.getDate() != null) {
-            try {
-                release = Date.valueOf(bookBuffer.getDate());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Illegal book release date value. Required date format: " + DATE_FORMAT + ".");
-            }
-        }
-        Set<Author> authors = parseAuthors(bookBuffer.getAuthors(), AUTHORS_DIVIDER);
-        return new Book(name, genre, release, authors);
+        Book book = new Book();
+        book.setName(parseName(bookBuffer.getName()));
+        book.setGenre(parseGenreFromDescription(bookBuffer.getDescription()));
+        book.setAuthors(parseAuthors(bookBuffer.getAuthors(), AUTHORS_DIVIDER));
+        parseDate(bookBuffer.getDate()).ifPresent(book::setReleaseDate);
+        return book;
     }
 
     private Integer countGenreIn(String str, Genre genre) {
@@ -94,5 +85,23 @@ public class BookParser implements IBookParser {
             throw new IllegalArgumentException("Illegal author name or surname. (" + name + " " + surname + ")");
         }
         return new Author(name, surname);
+    }
+
+    private String parseName(String name) {
+        if (!ValidatorUtils.isValidBookName(name)) {
+            throw new IllegalArgumentException("Illegal book name. Name: " + name + ".");
+        }
+        return name.trim();
+    }
+
+    private Optional<Date> parseDate(String date) {
+        if (date != null) {
+            try {
+                return Optional.of(Date.valueOf(date));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Illegal book release date value. Required date format: " + DATE_FORMAT + ".");
+            }
+        }
+        return Optional.empty();
     }
 }
