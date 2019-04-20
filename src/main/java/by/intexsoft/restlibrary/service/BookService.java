@@ -56,21 +56,22 @@ public class BookService implements IBookService {
             throw new ServiceException("Failed or interrupted I/O operations when Excel file was loaded. Filename: " + file.getOriginalFilename() + ".", e);
         }
         Set<Book> books = bookLoader.loadAllBooks();
-        Set<Author> authors = getAuthors(books);
-        Long booksLoaded = books.parallelStream().reduce(0L, (aLong, book) -> aLong + book.getBookAccounting().getTotal(), Long::sum);
+        Set<Author> authors = getAuthorsFrom(books);
+        Long booksLoaded = books.parallelStream()
+                .reduce(0L, (aLong, book) -> aLong + book.getBookAccounting().getTotal(), Long::sum);
         mergeWithDatabaseAuthors(books, authors);
         mergeWithDatabaseAccounting(books);
         saveOrUpdateAll(books);
         return booksLoaded;
     }
 
-    private Set<Author> getAuthors(Set<Book> books) {
+    private Set<Author> getAuthorsFrom(Set<Book> books) {
         return books.parallelStream()
-                .flatMap(book -> book.getAuthors().parallelStream())
+                .flatMap(book -> book.getAuthors().stream())
                 .collect(Collectors.toSet());
     }
 
-    private void mergeWithDatabaseAuthors(Set<Book> books, Set<Author> authors) throws ServiceException {
+    private void mergeWithDatabaseAuthors(Set<Book> books, Set<Author> authors) {
         Set<String> authorNameSet = new HashSet<>();
         Set<String> authorSurnameSet = new HashSet<>();
         authors.forEach(author -> {
@@ -78,13 +79,9 @@ public class BookService implements IBookService {
             authorSurnameSet.add(author.getSurname());
         });
         List<Author> authorsFromDb = authorDAO.findAllByNamesAndSurnamesNative(authorNameSet, authorSurnameSet);
-        //TODO Оптимизировать
-        if (!authorsFromDb.containsAll(authors)) {
-            throw new ServiceException("File contains author that is not in the database.");
-        }
-        books.forEach(book -> book.getAuthors().forEach(author -> {
-            author.setId(authorsFromDb.get(authorsFromDb.indexOf(author)).getId());
-        }));
+        books.stream()
+                .flatMap(book -> book.getAuthors().stream())
+                .forEach(author -> ifPresentSetId(authorsFromDb, author));
     }
 
     private void mergeWithDatabaseAccounting(Set<Book> books) {
@@ -169,5 +166,13 @@ public class BookService implements IBookService {
     @Override
     public void delete(Long id) throws ServiceException {
 
+    }
+
+    private void ifPresentSetId(List<Author> authorsFromDB, Author authorFromFile) {
+        int index = authorsFromDB.indexOf(authorFromFile);
+        if (index == -1) {
+            throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
+        }
+        authorFromFile.setId(authorsFromDB.get(index).getId());
     }
 }

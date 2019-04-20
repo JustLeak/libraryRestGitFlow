@@ -50,6 +50,39 @@ public class Book {
     public Book() {
     }
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Date getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(Date releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public Genre getGenre() {
+        return genre;
+    }
+
+    public void setGenre(Genre genre) {
+        this.genre = genre;
+    }
+
     public BookAccounting getBookAccounting() {
         return bookAccounting;
     }
@@ -62,24 +95,8 @@ public class Book {
         return authors;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Date getReleaseDate() {
-        return releaseDate;
-    }
-
-    public Genre getGenre() {
-        return genre;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public void setAuthors(Set<Author> authors) {
+        this.authors = authors;
     }
 
     @Override
