@@ -10,7 +10,9 @@ import org.apache.commons.math3.util.Pair;
 import org.springframework.util.StringUtils;
 
 import java.sql.Date;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,7 +37,6 @@ public class BookParser implements IBookParser {
                 .getKey();
     }
 
-
     @Override
     public Set<Author> parseAuthors(String authors, String divider) {
         if (authors == null) {
@@ -45,15 +46,8 @@ public class BookParser implements IBookParser {
             throw new IllegalArgumentException("Divider must be not null.");
         }
         List<String> authorList = Arrays.asList(authors.split(divider));
-        Set<Author> authorSet = authorList.stream()
-                .map(s -> {
-                    String[] nameSurname = s.split(NAMES_DIVIDER);
-                    if (nameSurname.length == 2 && ValidatorUtils.isValidName(nameSurname[0]) && ValidatorUtils.isValidName(nameSurname[1])) {
-                        return new Author(nameSurname[0], nameSurname[1]);
-                    } else {
-                        throw new IllegalArgumentException("Can't resolve author.");
-                    }
-                })
+        Set<Author> authorSet = authorList.parallelStream()
+                .map(this::parseFrom)
                 .collect(Collectors.toSet());
         if (authorList.size() != authorSet.size()) {
             throw new IllegalArgumentException("Authors must be unique.");
@@ -87,5 +81,18 @@ public class BookParser implements IBookParser {
     private Integer countGenreIn(String str, Genre genre) {
         String genreName = genre.name().toLowerCase();
         return StringUtils.countOccurrencesOf(str, genreName);
+    }
+
+    private Author parseFrom(String str) {
+        String[] nameSurname = str.split(NAMES_DIVIDER);
+        if (nameSurname.length != 2) {
+            throw new IllegalArgumentException("Can't resolve author. String: " + str + ".");
+        }
+        String name = nameSurname[0].trim();
+        String surname = nameSurname[1].trim();
+        if (!ValidatorUtils.isValidName(name) || !ValidatorUtils.isValidName(surname)) {
+            throw new IllegalArgumentException("Illegal author name or surname. (" + name + " " + surname + ")");
+        }
+        return new Author(name, surname);
     }
 }
