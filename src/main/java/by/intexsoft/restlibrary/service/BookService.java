@@ -56,28 +56,24 @@ public class BookService implements IBookService {
             throw new ServiceException("Failed or interrupted I/O operations when Excel file was loaded. Filename: " + file.getOriginalFilename() + ".", e);
         }
         Set<Book> books = bookLoader.loadAllBooks();
-        Set<Author> authors = getAuthorsFrom(books);
+        mergeWithDatabaseAuthors(books);
         Long booksLoaded = books.parallelStream()
                 .reduce(0L, (aLong, book) -> aLong + book.getBookAccounting().getTotal(), Long::sum);
-        mergeWithDatabaseAuthors(books, authors);
         mergeWithDatabaseAccounting(books);
         saveOrUpdateAll(books);
         return booksLoaded;
     }
 
-    private Set<Author> getAuthorsFrom(Set<Book> books) {
-        return books.parallelStream()
-                .flatMap(book -> book.getAuthors().stream())
-                .collect(Collectors.toSet());
-    }
-
-    private void mergeWithDatabaseAuthors(Set<Book> books, Set<Author> authors) {
+    private void mergeWithDatabaseAuthors(Set<Book> books) {
         Set<String> authorNameSet = new HashSet<>();
         Set<String> authorSurnameSet = new HashSet<>();
-        authors.forEach(author -> {
-            authorNameSet.add(author.getName());
-            authorSurnameSet.add(author.getSurname());
-        });
+        books.stream()
+                .flatMap(book -> book.getAuthors().stream())
+                .distinct()
+                .forEach(author -> {
+                    authorNameSet.add(author.getName());
+                    authorSurnameSet.add(author.getSurname());
+                });
         List<Author> authorsFromDb = authorDAO.findAllByNamesAndSurnamesNative(authorNameSet, authorSurnameSet);
         books.stream()
                 .flatMap(book -> book.getAuthors().stream())
