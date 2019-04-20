@@ -6,11 +6,13 @@ import by.intexsoft.restlibrary.model.enumeration.Genre;
 import by.intexsoft.restlibrary.service.loader.buffer.BookBuffer;
 import by.intexsoft.restlibrary.service.parser.api.IBookParser;
 import by.intexsoft.restlibrary.util.ValidatorUtils;
+import org.apache.commons.math3.util.Pair;
 import org.springframework.util.StringUtils;
 
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BookParser implements IBookParser {
     public static final String AUTHORS_DIVIDER = ", ";
@@ -25,20 +27,14 @@ public class BookParser implements IBookParser {
         if (desc.length() > 500) {
             throw new IllegalArgumentException("Description length must be lesser than 500.");
         }
-        Map<Genre, Integer> genreCountMap = new HashMap<>();
         String descLowerCase = desc.toLowerCase();
-        Arrays.stream(Genre.values())
-                .forEach(genre -> {
-                    int matchesCount = StringUtils.countOccurrencesOf(descLowerCase, genre.name().toLowerCase());
-                    if (matchesCount > 0) {
-                        genreCountMap.put(genre, matchesCount);
-                    }
-                });
-        return genreCountMap.entrySet().stream()
+        return Stream.of(Genre.values())
+                .map(genre -> new Pair<>(genre, countGenreIn(descLowerCase, genre)))
                 .max((o1, o2) -> o1.getValue() > o2.getValue() ? 1 : -1)
                 .orElseThrow(() -> new IllegalArgumentException("Can't resolve genre from description."))
                 .getKey();
     }
+
 
     @Override
     public Set<Author> parseAuthors(String authors, String divider) {
@@ -86,5 +82,10 @@ public class BookParser implements IBookParser {
         }
         Set<Author> authors = parseAuthors(bookBuffer.getAuthors(), AUTHORS_DIVIDER);
         return new Book(name, genre, release, authors);
+    }
+
+    private Integer countGenreIn(String str, Genre genre) {
+        String genreName = genre.name().toLowerCase();
+        return StringUtils.countOccurrencesOf(str, genreName);
     }
 }
