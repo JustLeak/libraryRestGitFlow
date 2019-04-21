@@ -52,6 +52,10 @@ public class BookAccounting {
         this.id = id;
     }
 
+    public Book getBook() {
+        return book;
+    }
+
     @Override
     public String toString() {
         return "BookAccounting{" +

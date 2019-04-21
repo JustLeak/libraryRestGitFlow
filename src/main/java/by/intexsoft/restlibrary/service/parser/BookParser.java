@@ -23,7 +23,7 @@ public class BookParser implements IBookParser {
     public static final String DATE_FORMAT = "yyyy-[m]m-[d]d";
 
     @Override
-    public Genre parseGenreFromDescription(String desc) {
+    public Genre parseFromDescription(String desc) {
         if (desc == null) {
             throw new IllegalArgumentException("Description must be not null.");
         }
@@ -63,18 +63,14 @@ public class BookParser implements IBookParser {
         }
         Book book = new Book();
         book.setName(parseName(bookBuffer.getName()));
-        book.setGenre(parseGenreFromDescription(bookBuffer.getDescription()));
+        book.setGenre(parseFromDescription(bookBuffer.getDescription()));
         book.setAuthors(parseAuthors(bookBuffer.getAuthors(), AUTHORS_DIVIDER));
         parseDate(bookBuffer.getDate()).ifPresent(book::setReleaseDate);
         return book;
     }
 
-    private Integer countGenreIn(String str, Genre genre) {
-        String genreName = genre.name().toLowerCase();
-        return StringUtils.countOccurrencesOf(str, genreName);
-    }
-
-    private Author parseFrom(String str) {
+    @Override
+    public Author parseFrom(String str) {
         String[] nameSurname = str.split(NAMES_DIVIDER);
         if (nameSurname.length != 2) {
             throw new IllegalArgumentException("Can't resolve author. String: " + str + ".");
@@ -87,14 +83,16 @@ public class BookParser implements IBookParser {
         return new Author(name, surname);
     }
 
-    private String parseName(String name) {
+    @Override
+    public String parseName(String name) {
         if (!ValidatorUtils.isValidBookName(name)) {
             throw new IllegalArgumentException("Illegal book name. Name: " + name + ".");
         }
         return name.trim();
     }
 
-    private Optional<Date> parseDate(String date) {
+    @Override
+    public Optional<Date> parseDate(String date) {
         if (date != null) {
             try {
                 return Optional.of(Date.valueOf(date));
@@ -103,5 +101,10 @@ public class BookParser implements IBookParser {
             }
         }
         return Optional.empty();
+    }
+
+    private Integer countGenreIn(String str, Genre genre) {
+        String genreName = genre.name().toLowerCase();
+        return StringUtils.countOccurrencesOf(str, genreName);
     }
 }

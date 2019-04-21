@@ -20,6 +20,25 @@ public abstract class ExcelBookLoader implements IBookLoader {
         bookParser = new BookParser();
     }
 
+    private static BookAccounting mergeBookAccounting(BookAccounting oldBookAccounting, BookAccounting newBookAccounting) {
+        Book oldBook = oldBookAccounting.getBook();
+        Book newBook = newBookAccounting.getBook();
+        if (!isValidBooksToMerge(oldBook, newBook)) {
+            throw new IllegalArgumentException("Books with the same name and author must have the same genre and release date.");
+        }
+        Long newCount = oldBookAccounting.getTotal() + 1;
+        oldBookAccounting.setTotal(newCount);
+        oldBookAccounting.setAvailable(newCount);
+        return oldBookAccounting;
+    }
+
+    private static boolean isValidBooksToMerge(Book oldBook, Book newBook) {
+        if (!oldBook.getGenre().equals(newBook.getGenre())) {
+            return false;
+        }
+        return oldBook.getReleaseDate() != null ? !oldBook.getReleaseDate().equals(newBook.getReleaseDate()) : newBook.getReleaseDate() == null;
+    }
+
     @Override
     public Set<Book> loadAllBooks() {
         Map<Integer, List<String>> intListMap = excelReader.readSheet(0);
@@ -28,41 +47,29 @@ public abstract class ExcelBookLoader implements IBookLoader {
         } else {
             throw new IllegalArgumentException("Illegal excel file header format. Header: " + intListMap.get(0) + ".");
         }
-        return parseAndCountBooks(intListMap.values());
+        return convertToResultBookSet(intListMap.values());
     }
 
-    private Set<Book> parseAndCountBooks(Collection<List<String>> stringLists) {
-        Set<Book> result = new HashSet<>();
-        stringLists.forEach(stringList -> {
-            BookBuffer buffer = convertToBufferList(stringList);
-            Book newBook = bookParser.parseFrom(buffer);
-            boolean isExistsBook = result.stream().anyMatch(existingBook -> {
-                if (existingBook.equals(newBook)) {
-                    if (!existingBook.getGenre().equals(newBook.getGenre())) {
-                        throw new IllegalArgumentException("Books with the same name and author must have the same genre.");
-                    }
-                    if (existingBook.getReleaseDate() != null ? existingBook.getReleaseDate().equals(newBook.getReleaseDate()) : newBook.getReleaseDate() != null) {
-                        throw new IllegalArgumentException("Books with the same name and author must have the same release date.");
-                    }
-                    BookAccounting bookAccounting = existingBook.getBookAccounting();
-                    bookAccounting.setAvailable(bookAccounting.getAvailable() + 1);
-                    bookAccounting.setTotal(bookAccounting.getTotal() + 1);
-                    return true;
-                }
-                return false;
-            });
-            if (!isExistsBook) {
-                newBook.setBookAccounting(new BookAccounting(newBook));
-                result.add(newBook);
-            }
-        });
-        return result;
+    private Set<Book> convertToResultBookSet(Collection<List<String>> stringLists) {
+        Map<Book, BookAccounting> bookCountMap = new HashMap<>();
+        for (List<String> stringList : stringLists) {
+            Book book = parseFrom(stringList);
+            bookCountMap.merge(book, book.getBookAccounting(), ExcelBookLoader::mergeBookAccounting);
+        }
+        return bookCountMap.keySet();
     }
 
-    private BookBuffer convertToBufferList(List<String> stringList) {
-        if (stringList.size() == 4) {
+    private Book parseFrom(List<String> stringList) {
+        BookBuffer buffer = convertFrom(stringList);
+        Book book = bookParser.parseFrom(buffer);
+        book.setBookAccounting(new BookAccounting(book));
+        return book;
+    }
+
+    private BookBuffer convertFrom(List<String> stringList) {
+        if (stringList.size() == DEFAULT_EXCEL_HEADER.size()) {
             return new BookBuffer(stringList.get(0), stringList.get(1), stringList.get(2), stringList.get(3));
-        } else if (stringList.size() == 3) {
+        } else if (stringList.size() == DEFAULT_EXCEL_HEADER.size() - 1) {
             return new BookBuffer(stringList.get(0), stringList.get(1), null, stringList.get(2));
         } else {
             throw new IllegalArgumentException("Illegal input list size. Size = " + stringList.size() + ".");
@@ -70,7 +77,7 @@ public abstract class ExcelBookLoader implements IBookLoader {
     }
 
     private boolean isValidExcelHeader(List<String> header) {
-        if (header == null || header.size() != 4) {
+        if (header == null || header.size() != DEFAULT_EXCEL_HEADER.size()) {
             return false;
         }
         List<String> headerLowerCase = header.stream()
