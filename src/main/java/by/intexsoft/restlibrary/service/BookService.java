@@ -59,7 +59,7 @@ public class BookService implements IBookService {
         mergeWithDatabaseAuthors(books);
         Long booksLoaded = books.parallelStream()
                 .reduce(0L, (aLong, book) -> aLong + book.getBookAccounting().getTotal(), Long::sum);
-        mergeWithDatabaseAccounting(books);
+        mergeWithDatabaseBooks(books);
         saveOrUpdateAll(books);
         return booksLoaded;
     }
@@ -77,10 +77,10 @@ public class BookService implements IBookService {
         List<Author> authorsFromDb = authorDAO.findAllByNamesAndSurnamesNative(authorNameSet, authorSurnameSet);
         books.stream()
                 .flatMap(book -> book.getAuthors().stream())
-                .forEach(author -> findAndSetId(author, authorsFromDb));
+                .forEach(author -> mergeAuthorToDatabase(author, authorsFromDb));
     }
 
-    private void mergeWithDatabaseAccounting(Set<Book> books) {
+    private void mergeWithDatabaseBooks(Set<Book> books) {
         if (books == null) {
             throw new IllegalArgumentException("Books must not be null.");
         }
@@ -91,20 +91,7 @@ public class BookService implements IBookService {
             book.getAuthors().forEach(author -> authorIdSet.add(author.getId()));
         });
         List<Book> booksFromDb = bookDAO.findAllByNamesAndAuthorIdSetNative(bookNameSet, authorIdSet);
-        books.forEach(book -> {
-            int index = booksFromDb.indexOf(book);
-            if (index != -1) {
-                Book bookFromDb = booksFromDb.get(index);
-                Long totalFromDb = bookFromDb.getBookAccounting().getTotal();
-                Long availableFromDb = bookFromDb.getBookAccounting().getAvailable();
-                Long totalFromFile = book.getBookAccounting().getTotal();
-                Long availableFromFile = book.getBookAccounting().getAvailable();
-                book.setId(bookFromDb.getId());
-                book.getBookAccounting().setTotal(totalFromDb + totalFromFile);
-                book.getBookAccounting().setAvailable(availableFromDb + availableFromFile);
-                book.getBookAccounting().setId(bookFromDb.getBookAccounting().getId());
-            }
-        });
+        books.forEach(newBook -> mergeBookToDatabase(newBook, booksFromDb));
     }
 
     @Override
@@ -164,11 +151,26 @@ public class BookService implements IBookService {
 
     }
 
-    private void findAndSetId(Author authorFromFile, List<Author> authorsFromDB) {
+    private void mergeAuthorToDatabase(Author authorFromFile, List<Author> authorsFromDB) {
         int index = authorsFromDB.indexOf(authorFromFile);
         if (index == -1) {
             throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
         }
         authorFromFile.setId(authorsFromDB.get(index).getId());
+    }
+
+    private void mergeBookToDatabase(Book book, List<Book> booksFromDB) {
+        int index = booksFromDB.indexOf(book);
+        if (index != -1) {
+            Book bookFromDb = booksFromDB.get(index);
+            Long totalFromDb = bookFromDb.getBookAccounting().getTotal();
+            Long availableFromDb = bookFromDb.getBookAccounting().getAvailable();
+            Long totalFromFile = book.getBookAccounting().getTotal();
+            Long availableFromFile = book.getBookAccounting().getAvailable();
+            book.setId(bookFromDb.getId());
+            book.getBookAccounting().setTotal(totalFromDb + totalFromFile);
+            book.getBookAccounting().setAvailable(availableFromDb + availableFromFile);
+            book.getBookAccounting().setId(bookFromDb.getBookAccounting().getId());
+        }
     }
 }
