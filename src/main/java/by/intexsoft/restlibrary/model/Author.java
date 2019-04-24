@@ -1,5 +1,7 @@
 package by.intexsoft.restlibrary.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -9,10 +11,14 @@ import java.util.Set;
 })
 public class Author extends Person {
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "books_authors",
-            joinColumns = @JoinColumn(name = "author_author_id"),
-            inverseJoinColumns = @JoinColumn(name = "book_book_id"))
+    @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Book> books;
+
+    public Author(String name, String surname) {
+        super(name, surname);
+    }
+
+    public Author() {
+    }
 }

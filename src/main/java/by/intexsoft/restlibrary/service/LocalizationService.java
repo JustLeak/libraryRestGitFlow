@@ -19,7 +19,8 @@ public class LocalizationService implements ILocalizationService {
 
     @PostConstruct
     public void init() {
-        setCurrentLang(defaultLang);
+        resourceBundle = ResourceBundle.getBundle("localization/l10n_user_messages", new Locale(defaultLang));
+        currentLang = defaultLang;
     }
 
     public String getString(String key, String language) {
@@ -28,16 +29,11 @@ public class LocalizationService implements ILocalizationService {
     }
 
     public void setCurrentLang(String lang) {
-        if (resourceBundle == null || lang == null) {
+        if (lang == null) {
             currentLang = defaultLang;
-            refresh();
         } else if (!currentLang.equals(lang)) {
             currentLang = lang;
-            refresh();
         }
-    }
-
-    public void refresh() {
         resourceBundle = ResourceBundle.getBundle("localization/l10n_user_messages", new Locale(currentLang));
     }
 }

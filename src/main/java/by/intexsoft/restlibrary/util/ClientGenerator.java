@@ -2,7 +2,8 @@ package by.intexsoft.restlibrary.util;
 
 import by.intexsoft.restlibrary.model.Client;
 
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDate;
 
 public class ClientGenerator {
     public static Client generate() {
@@ -16,12 +17,13 @@ public class ClientGenerator {
     private static String generateStr() {
         int length = (int) (Math.random() * 10);
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < length; i++) {
             builder.append(generateChar());
+        }
         return builder.toString();
     }
 
     private static Date getCurrentDate() {
-        return new Date();
+        return Date.valueOf(LocalDate.now());
     }
 }

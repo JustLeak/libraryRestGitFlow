@@ -7,10 +7,6 @@ public class ClientDTO {
     private String surname;
     private String birthday;
 
-
-    public ClientDTO() {
-    }
-
     public Long getClientId() {
         return clientId;
     }

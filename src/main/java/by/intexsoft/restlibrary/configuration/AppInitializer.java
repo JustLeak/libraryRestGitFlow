@@ -13,14 +13,9 @@ public class AppInitializer implements WebApplicationInitializer {
     public void onStartup(ServletContext container) {
         AnnotationConfigWebApplicationContext rootContext =
                 new AnnotationConfigWebApplicationContext();
-
         rootContext.setConfigLocation("by.intexsoft.restlibrary.configuration");
-
         container.addListener(new ContextLoaderListener(rootContext));
-
-        ServletRegistration.Dynamic dispatcher = container
-                .addServlet("dispatcher", new DispatcherServlet(rootContext));
-
+        ServletRegistration.Dynamic dispatcher = container.addServlet("dispatcher", new DispatcherServlet(rootContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
     }

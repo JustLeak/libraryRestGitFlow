@@ -5,9 +5,6 @@ public class LibraryCardDTO {
     private Long libraryCardId;
     private String startDate;
 
-    public LibraryCardDTO() {
-    }
-
     public String getStartDate() {
         return startDate;
     }
@@ -15,7 +12,6 @@ public class LibraryCardDTO {
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
-
 
     public Long getClientId() {
         return clientId;

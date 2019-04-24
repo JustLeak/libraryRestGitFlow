@@ -7,6 +7,7 @@ import by.intexsoft.restlibrary.model.dto.LibraryCardDTO;
 import java.util.List;
 
 public interface ICardService extends ICrudService<LibraryCard, Long> {
+
     List<LibraryCardDTO> getAllCardsDTO();
 
     LibraryCardDTO getCardDTOById(Long cardId) throws ServiceException;
