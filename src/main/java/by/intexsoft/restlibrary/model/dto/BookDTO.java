@@ -1,18 +1,15 @@
 package by.intexsoft.restlibrary.model.dto;
 
 import by.intexsoft.restlibrary.model.Author;
-import by.intexsoft.restlibrary.model.BookAccounting;
 import by.intexsoft.restlibrary.model.enumeration.Genre;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 public class BookDTO {
     private Long id;
     private String name;
-    private LocalDate releaseDate;
+    private String releaseDate;
     private Genre genre;
-    private BookAccounting bookAccounting;
     private Set<Author> authors;
 
     public Long getId() {
@@ -31,11 +28,11 @@ public class BookDTO {
         this.name = name;
     }
 
-    public LocalDate getReleaseDate() {
+    public String getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -45,14 +42,6 @@ public class BookDTO {
 
     public void setGenre(Genre genre) {
         this.genre = genre;
-    }
-
-    public BookAccounting getBookAccounting() {
-        return bookAccounting;
-    }
-
-    public void setBookAccounting(BookAccounting bookAccounting) {
-        this.bookAccounting = bookAccounting;
     }
 
     public Set<Author> getAuthors() {

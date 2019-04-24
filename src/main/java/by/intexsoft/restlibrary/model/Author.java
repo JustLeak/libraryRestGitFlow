@@ -1,5 +1,7 @@
 package by.intexsoft.restlibrary.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import java.util.Set;
 public class Author extends Person {
 
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Book> books;
 
     public Author(String name, String surname) {

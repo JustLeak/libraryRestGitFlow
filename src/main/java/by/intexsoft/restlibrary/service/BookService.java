@@ -7,6 +7,7 @@ import by.intexsoft.restlibrary.model.dao.api.IAuthorDAO;
 import by.intexsoft.restlibrary.model.dao.api.IBookDAO;
 import by.intexsoft.restlibrary.model.dto.BookDTO;
 import by.intexsoft.restlibrary.model.enumeration.FileExtension;
+import by.intexsoft.restlibrary.model.filter.BookFilter;
 import by.intexsoft.restlibrary.service.api.IBookService;
 import by.intexsoft.restlibrary.service.loader.XLSBookLoader;
 import by.intexsoft.restlibrary.service.loader.XLSXBookLoader;
@@ -58,10 +59,30 @@ public class BookService implements IBookService {
         Set<Book> books = bookLoader.loadAllBooks();
         mergeWithDatabaseAuthors(books);
         Long booksLoaded = books.parallelStream()
-                .reduce(0L, (aLong, book) -> aLong + book.getBookAccounting().getTotal(), Long::sum);
+                .reduce(0L, (count, book) -> count + book.getBookAccounting().getTotal(), Long::sum);
         mergeWithDatabaseBooks(books);
         saveOrUpdateAll(books);
         return booksLoaded;
+    }
+
+    @Override
+    public List<BookDTO> getAllBooksDTO(BookFilter bookFilter) throws ServiceException {
+        if (bookFilter == null) {
+            throw new ServiceException("BookFilter must not be null.");
+        }
+        return bookDAO.findAllFilterCriteria(bookFilter).stream()
+                .map(DTOUtils::convertBookToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void saveOrUpdateAll(Set<Book> books) throws ServiceException {
+        if (books == null) {
+            throw new ServiceException("Books list must not be null.");
+        }
+        for (Book b : books) {
+            bookDAO.saveOrUpdate(b);
+        }
     }
 
     private void mergeWithDatabaseAuthors(Set<Book> books) {
@@ -80,9 +101,9 @@ public class BookService implements IBookService {
                 .forEach(author -> mergeAuthorToDatabase(author, authorsFromDb));
     }
 
-    private void mergeWithDatabaseBooks(Set<Book> books) {
+    private void mergeWithDatabaseBooks(Set<Book> books) throws ServiceException {
         if (books == null) {
-            throw new IllegalArgumentException("Books must not be null.");
+            throw new ServiceException("Books must not be null.");
         }
         Set<String> bookNameSet = new HashSet<>();
         Set<Long> authorIdSet = new HashSet<>();
@@ -94,14 +115,26 @@ public class BookService implements IBookService {
         books.forEach(newBook -> mergeBookToDatabase(newBook, booksFromDb));
     }
 
-    @Override
-    @Transactional
-    public void saveOrUpdateAll(Set<Book> books) throws ServiceException {
-        if (books == null) {
-            throw new ServiceException("Books list must not be null.");
+    private void mergeAuthorToDatabase(Author authorFromFile, List<Author> authorsFromDB) {
+        int index = authorsFromDB.indexOf(authorFromFile);
+        if (index == -1) {
+            throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
         }
-        for (Book b : books) {
-            bookDAO.saveOrUpdate(b);
+        authorFromFile.setId(authorsFromDB.get(index).getId());
+    }
+
+    private void mergeBookToDatabase(Book book, List<Book> booksFromDB) {
+        int index = booksFromDB.indexOf(book);
+        if (index != -1) {
+            Book bookFromDb = booksFromDB.get(index);
+            Long totalFromDb = bookFromDb.getBookAccounting().getTotal();
+            Long availableFromDb = bookFromDb.getBookAccounting().getAvailable();
+            Long totalFromFile = book.getBookAccounting().getTotal();
+            Long availableFromFile = book.getBookAccounting().getAvailable();
+            book.setId(bookFromDb.getId());
+            book.getBookAccounting().setTotal(totalFromDb + totalFromFile);
+            book.getBookAccounting().setAvailable(availableFromDb + availableFromFile);
+            book.getBookAccounting().setId(bookFromDb.getBookAccounting().getId());
         }
     }
 
@@ -116,14 +149,7 @@ public class BookService implements IBookService {
 
     @Override
     public List<Book> getAll() {
-        return bookDAO.getAll();
-    }
-
-    @Override
-    public List<BookDTO> getAllBooksDTO() {
-        return getAll().stream()
-                .map(DTOUtils::convertBookToDTO)
-                .collect(Collectors.toList());
+        return null;
     }
 
     @Override
@@ -149,28 +175,5 @@ public class BookService implements IBookService {
     @Override
     public void delete(Long id) throws ServiceException {
 
-    }
-
-    private void mergeAuthorToDatabase(Author authorFromFile, List<Author> authorsFromDB) {
-        int index = authorsFromDB.indexOf(authorFromFile);
-        if (index == -1) {
-            throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
-        }
-        authorFromFile.setId(authorsFromDB.get(index).getId());
-    }
-
-    private void mergeBookToDatabase(Book book, List<Book> booksFromDB) {
-        int index = booksFromDB.indexOf(book);
-        if (index != -1) {
-            Book bookFromDb = booksFromDB.get(index);
-            Long totalFromDb = bookFromDb.getBookAccounting().getTotal();
-            Long availableFromDb = bookFromDb.getBookAccounting().getAvailable();
-            Long totalFromFile = book.getBookAccounting().getTotal();
-            Long availableFromFile = book.getBookAccounting().getAvailable();
-            book.setId(bookFromDb.getId());
-            book.getBookAccounting().setTotal(totalFromDb + totalFromFile);
-            book.getBookAccounting().setAvailable(availableFromDb + availableFromFile);
-            book.getBookAccounting().setId(bookFromDb.getBookAccounting().getId());
-        }
     }
 }

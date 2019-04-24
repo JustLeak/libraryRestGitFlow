@@ -5,14 +5,13 @@ import by.intexsoft.restlibrary.model.Book;
 import by.intexsoft.restlibrary.model.enumeration.Genre;
 import by.intexsoft.restlibrary.service.loader.buffer.BookBuffer;
 import by.intexsoft.restlibrary.service.parser.api.IBookParser;
+import by.intexsoft.restlibrary.util.DateConverter;
 import by.intexsoft.restlibrary.util.ValidatorUtils;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.util.StringUtils;
 
-import java.sql.Date;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 public class BookParser implements IBookParser {
     public static final String AUTHORS_DIVIDER = ", ";
     public static final String NAMES_DIVIDER = " ";
-    public static final String DATE_FORMAT = "yyyy-[m]m-[d]d";
 
     @Override
     public Genre parseFromDescription(String desc) {
@@ -65,7 +63,9 @@ public class BookParser implements IBookParser {
         book.setName(parseName(bookBuffer.getName()));
         book.setGenre(parseFromDescription(bookBuffer.getDescription()));
         book.setAuthors(parseAuthors(bookBuffer.getAuthors(), AUTHORS_DIVIDER));
-        parseDate(bookBuffer.getDate()).ifPresent(book::setReleaseDate);
+        if (bookBuffer.getDate() != null && !bookBuffer.getDate().equals("")) {
+            book.setReleaseDate(DateConverter.convertFrom(bookBuffer.getDate()));
+        }
         return book;
     }
 
@@ -89,18 +89,6 @@ public class BookParser implements IBookParser {
             throw new IllegalArgumentException("Illegal book name. Name: " + name + ".");
         }
         return name.trim();
-    }
-
-    @Override
-    public Optional<Date> parseDate(String date) {
-        if (date != null) {
-            try {
-                return Optional.of(Date.valueOf(date));
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Illegal book release date value. Required date format: " + DATE_FORMAT + ".");
-            }
-        }
-        return Optional.empty();
     }
 
     private Integer countGenreIn(String str, Genre genre) {

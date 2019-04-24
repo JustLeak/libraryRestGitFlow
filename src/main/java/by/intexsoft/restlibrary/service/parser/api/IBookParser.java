@@ -5,8 +5,6 @@ import by.intexsoft.restlibrary.model.Book;
 import by.intexsoft.restlibrary.model.enumeration.Genre;
 import by.intexsoft.restlibrary.service.loader.buffer.BookBuffer;
 
-import java.sql.Date;
-import java.util.Optional;
 import java.util.Set;
 
 public interface IBookParser {
@@ -20,6 +18,4 @@ public interface IBookParser {
     String parseName(String name);
 
     Book parseFrom(BookBuffer bookBuffer);
-
-    Optional<Date> parseDate(String date);
 }

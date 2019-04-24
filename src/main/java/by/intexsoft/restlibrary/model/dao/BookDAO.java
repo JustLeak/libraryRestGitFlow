@@ -1,14 +1,17 @@
 package by.intexsoft.restlibrary.model.dao;
 
-import by.intexsoft.restlibrary.model.Author;
 import by.intexsoft.restlibrary.model.Book;
 import by.intexsoft.restlibrary.model.dao.api.IBookDAO;
+import by.intexsoft.restlibrary.model.filter.BookFilter;
 import org.hibernate.Session;
-import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -16,32 +19,6 @@ public class BookDAO extends CrudDAO<Book, Long> implements IBookDAO {
 
     public BookDAO() {
         super(Book.class);
-    }
-
-    @Override
-    public Optional<Book> findByNameAndAuthorsNative(String name, Set<Author> authors) {
-        /*String sql = "SELECT * " +
-                "FROM book b " +
-                "INNER JOIN books_authors ba ON ba.book_book_id = book_id " +
-                "WHERE ba.author_author_id IN (:authorIdSet) " +
-                "AND b.name = :name" +
-                "GROUP BY ba.book_book_id " +
-                "HAVING COUNT(ba.book_book_id) = :authorsCount";*/
-        String sql = "SELECT * FROM Book b " +
-                "INNER JOIN books_authors ba ON b.book_id = ba.book_book_id " +
-                "INNER JOIN Author a ON ba.author_author_id = a.author_id " +
-                "WHERE b.name = :name";
-        Session session = openSession();
-        List<Book> books = session.createNativeQuery(sql, Book.class)
-                .setParameter("name", name)
-                .getResultList();
-        session.close();
-        for (Book book : books) {
-            if (book.getAuthors().equals(authors)) {
-                return Optional.of(book);
-            }
-        }
-        return Optional.empty();
     }
 
     @Override
@@ -61,18 +38,28 @@ public class BookDAO extends CrudDAO<Book, Long> implements IBookDAO {
     }
 
     @Override
-    public Optional<Book> findByNameAndAuthors(String name, Set<Author> authors) {
-        String hql = "FROM Book b JOIN FETCH b.authors a WHERE a IN (:authors) AND b.name =:name";
+    public List<Book> findAllFilterCriteria(BookFilter filter) {
         Session session = openSession();
-        Query<Book> query = session.createQuery(hql, Book.class);
-        query.setParameter("name", name);
-        query.setParameterList("authors", authors);
-        Optional<Book> result = query.uniqueResultOptional();
-        session.close();
-        if (result.isPresent() && result.get().getAuthors().size() == authors.size()) {
-            return result;
-        } else {
-            return Optional.empty();
+        CriteriaBuilder cb = session.getCriteriaBuilder();
+        CriteriaQuery<Book> cq = cb.createQuery(Book.class);
+        Root<Book> booksRoot = cq.from(Book.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.getName() != null) {
+            predicates.add(cb.equal(booksRoot.get("name"), filter.getName()));
         }
+        if (filter.getGenre() != null) {
+            predicates.add(cb.equal(booksRoot.get("genre"), filter.getGenre()));
+        }
+        if (filter.getFrom() != null) {
+            predicates.add(cb.greaterThan(booksRoot.get("releaseDate"), filter.getFrom()));
+        }
+        if (filter.getTo() != null) {
+            predicates.add(cb.lessThan(booksRoot.get("releaseDate"), filter.getTo()));
+        }
+        cq.select(booksRoot)
+                .where(predicates.toArray(new Predicate[]{}));
+        List<Book> result = session.createQuery(cq).getResultList();
+        session.close();
+        return result;
     }
 }
