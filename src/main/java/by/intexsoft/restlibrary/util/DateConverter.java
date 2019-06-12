@@ -9,7 +9,7 @@ public class DateConverter {
         try {
             return Date.valueOf(date);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Illegal date value. Required date format: " + DATE_FORMAT + ".");
+            throw new IllegalArgumentException("Illegal date value: " + date + ". Required date format: " + DATE_FORMAT + ".");
         }
     }
 }

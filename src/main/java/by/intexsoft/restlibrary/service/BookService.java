@@ -9,22 +9,28 @@ import by.intexsoft.restlibrary.model.dto.BookDTO;
 import by.intexsoft.restlibrary.model.enumeration.FileExtension;
 import by.intexsoft.restlibrary.model.filter.BookFilter;
 import by.intexsoft.restlibrary.service.api.IBookService;
-import by.intexsoft.restlibrary.service.loader.XLSBookLoader;
-import by.intexsoft.restlibrary.service.loader.XLSXBookLoader;
+import by.intexsoft.restlibrary.service.loader.CSVBookLoader;
+import by.intexsoft.restlibrary.service.loader.ExcelBookLoader;
 import by.intexsoft.restlibrary.service.loader.api.IBookLoader;
+import by.intexsoft.restlibrary.service.parser.BookParser;
+import by.intexsoft.restlibrary.service.reader.CSVReader;
+import by.intexsoft.restlibrary.service.reader.ExcelReader;
+import by.intexsoft.restlibrary.service.writer.CSVWriter;
+import by.intexsoft.restlibrary.service.writer.api.ICSVWriter;
 import by.intexsoft.restlibrary.util.DTOUtils;
-import by.intexsoft.restlibrary.util.FileResolver;
 import by.intexsoft.restlibrary.util.ValidatorUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,38 +45,48 @@ public class BookService implements IBookService {
     }
 
     @Override
-    public Long uploadExcelFile(MultipartFile file) throws ServiceException {
-        IBookLoader bookLoader;
-        FileExtension fileExtension = FileResolver.resolveExtension(file.getOriginalFilename());
-        try (InputStream inputStream = file.getInputStream()) {
-            switch (fileExtension) {
+    public Long uploadFile(MultipartFile file) throws ServiceException {
+        Set<Book> books;
+        try (InputStream in = file.getInputStream()) {
+            IBookLoader bookLoader;
+            FileExtension extension = FileExtension.forString(FilenameUtils.getExtension(file.getOriginalFilename()));
+            switch (extension) {
+                case CSV:
+                    bookLoader = new CSVBookLoader(new BookParser(), new CSVReader(in));
+                    break;
                 case XLS:
-                    bookLoader = new XLSBookLoader(inputStream);
+                    bookLoader = new ExcelBookLoader(new BookParser(), new ExcelReader(new HSSFWorkbook(in)));
                     break;
                 case XLSX:
-                    bookLoader = new XLSXBookLoader(inputStream);
+                    bookLoader = new ExcelBookLoader(new BookParser(), new ExcelReader(new XSSFWorkbook(in)));
                     break;
                 default:
-                    throw new ServiceException("Input file must have .xls or .xlsx extension.");
+                    throw new ServiceException("Can't load ." + extension.getExtension() + " file.");
             }
+            books = bookLoader.loadBooks();
         } catch (IOException e) {
             throw new ServiceException("Failed or interrupted I/O operations when Excel file was loaded. Filename: " + file.getOriginalFilename() + ".", e);
         }
-        Set<Book> books = bookLoader.loadAllBooks();
-        mergeWithDatabaseAuthors(books);
+        if (books.isEmpty()) {
+            return 0L;
+        }
+        mergeAuthorsWithDB(books);
         Long booksLoaded = books.parallelStream()
                 .reduce(0L, (count, book) -> count + book.getBookAccounting().getTotal(), Long::sum);
-        mergeWithDatabaseBooks(books);
+        mergeBooksWithDB(books);
         saveOrUpdateAll(books);
         return booksLoaded;
     }
 
     @Override
-    public List<BookDTO> getAllBooksDTO(BookFilter bookFilter) throws ServiceException {
+    public List<BookDTO> getAllBooksDTO(BookFilter bookFilter) {
+        List<Book> bookList;
         if (bookFilter == null) {
-            throw new ServiceException("BookFilter must not be null.");
+            bookList = getAll();
+        } else {
+            bookList = bookDAO.findAllFilterCriteria(bookFilter);
         }
-        return bookDAO.findAllFilterCriteria(bookFilter).stream()
+        return bookList.parallelStream()
                 .map(DTOUtils::convertBookToDTO)
                 .collect(Collectors.toList());
     }
@@ -85,7 +101,30 @@ public class BookService implements IBookService {
         }
     }
 
-    private void mergeWithDatabaseAuthors(Set<Book> books) {
+    @Override
+    public InputStreamResource convertToCSV(List<BookDTO> bookDTOList) throws ServiceException {
+        try {
+            ICSVWriter writer = new CSVWriter();
+            InputStream in = writer.toInputStream(CSVBookLoader.DEFAULT_CSV_HEADER.toArray(new String[]{}), convertFrom(bookDTOList));
+            return new InputStreamResource(in);
+        } catch (IOException e) {
+            throw new ServiceException("Failed or interrupted I/O operations while creating CSV InputStreamResource.", e);
+        }
+    }
+
+    private Collection<Collection<String>> convertFrom(List<BookDTO> bookDTOList) {
+        return bookDTOList.stream()
+                .map(this::convertToStringList)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> convertToStringList(BookDTO bookDTO) {
+        StringJoiner stringJoiner = new StringJoiner(CSVBookLoader.AUTHORS_DIVIDER);
+        bookDTO.getAuthors().forEach(author -> stringJoiner.add(author.toString()));
+        return Arrays.asList(bookDTO.getName(), bookDTO.getGenre().name(), bookDTO.getReleaseDate(), stringJoiner.toString());
+    }
+
+    private void mergeAuthorsWithDB(Set<Book> books) {
         Set<String> authorNameSet = new HashSet<>();
         Set<String> authorSurnameSet = new HashSet<>();
         books.stream()
@@ -98,13 +137,10 @@ public class BookService implements IBookService {
         List<Author> authorsFromDb = authorDAO.findAllByNamesAndSurnamesNative(authorNameSet, authorSurnameSet);
         books.stream()
                 .flatMap(book -> book.getAuthors().stream())
-                .forEach(author -> mergeAuthorToDatabase(author, authorsFromDb));
+                .forEach(author -> mergeAuthorWithDB(author, authorsFromDb));
     }
 
-    private void mergeWithDatabaseBooks(Set<Book> books) throws ServiceException {
-        if (books == null) {
-            throw new ServiceException("Books must not be null.");
-        }
+    private void mergeBooksWithDB(Set<Book> books) {
         Set<String> bookNameSet = new HashSet<>();
         Set<Long> authorIdSet = new HashSet<>();
         books.forEach(book -> {
@@ -112,10 +148,10 @@ public class BookService implements IBookService {
             book.getAuthors().forEach(author -> authorIdSet.add(author.getId()));
         });
         List<Book> booksFromDb = bookDAO.findAllByNamesAndAuthorIdSetNative(bookNameSet, authorIdSet);
-        books.forEach(newBook -> mergeBookToDatabase(newBook, booksFromDb));
+        books.forEach(newBook -> mergeBookWithDB(newBook, booksFromDb));
     }
 
-    private void mergeAuthorToDatabase(Author authorFromFile, List<Author> authorsFromDB) {
+    private void mergeAuthorWithDB(Author authorFromFile, List<Author> authorsFromDB) {
         int index = authorsFromDB.indexOf(authorFromFile);
         if (index == -1) {
             throw new IllegalArgumentException("File contains author that is not in the database. Author: " + authorFromFile + ".");
@@ -123,7 +159,7 @@ public class BookService implements IBookService {
         authorFromFile.setId(authorsFromDB.get(index).getId());
     }
 
-    private void mergeBookToDatabase(Book book, List<Book> booksFromDB) {
+    private void mergeBookWithDB(Book book, List<Book> booksFromDB) {
         int index = booksFromDB.indexOf(book);
         if (index != -1) {
             Book bookFromDb = booksFromDB.get(index);
@@ -141,7 +177,7 @@ public class BookService implements IBookService {
     @Override
     public Book getOne(Long id) throws ServiceException {
         if (!ValidatorUtils.isValidId(id)) {
-            throw new ServiceException("Illegal book_id value. book_id  = " + id + ".");
+            throw new ServiceException("Illegal book_id value. book_id = " + id + ".");
         }
         return bookDAO.getOne(id).orElseThrow(() ->
                 new ServiceException("Book does not exists."));
@@ -149,7 +185,7 @@ public class BookService implements IBookService {
 
     @Override
     public List<Book> getAll() {
-        return null;
+        return bookDAO.getAll();
     }
 
     @Override

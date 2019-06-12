@@ -1,7 +1,7 @@
 package by.intexsoft.restlibrary.model.enumeration;
 
 public enum FileExtension {
-    XLS("xls"), XLSX("xlsx");
+    XLS("xls"), XLSX("xlsx"), CSV("csv");
 
     private final String extension;
 
@@ -11,7 +11,7 @@ public enum FileExtension {
 
     public static FileExtension forString(String format) {
         for (FileExtension type : values()) {
-            if (type.extension.equals(format)) {
+            if (type.extension.equalsIgnoreCase(format)) {
                 return type;
             }
         }

@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class ExcelReader implements IExcelReader {
-    private Workbook workbook;
+    private final Workbook workbook;
 
     public ExcelReader(Workbook workbook) {
         this.workbook = workbook;
@@ -36,9 +36,9 @@ public class ExcelReader implements IExcelReader {
         }
         Row row = workbook.getSheetAt(sheetNum).getRow(rowNum);
         if (row == null) {
-            throw new IllegalArgumentException("Can't read row with number = " + rowNum + " .Illegal row index.");
+            throw new IllegalArgumentException("Can't read row with number = " + rowNum + " . Illegal row index.");
         }
-        Stream<Cell> cellStream = StreamSupport.stream(row.spliterator(), false);
+        Stream<Cell> cellStream = StreamSupport.stream(row.spliterator(), true);
         return cellStream.map(cell -> {
             switch (cell.getCellType()) {
                 case STRING:

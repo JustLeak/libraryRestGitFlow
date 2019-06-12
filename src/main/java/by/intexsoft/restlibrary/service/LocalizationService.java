@@ -11,7 +11,7 @@ import java.util.ResourceBundle;
 
 @Service
 @PropertySource("classpath:localization/localization.properties")
-public class LocalizationService implements ILocalizationService {
+public class LocalizationService implements ILocalizationService {//todo multithreading remove state
     @Value("${language_default}")
     private String defaultLang;
     private String currentLang;

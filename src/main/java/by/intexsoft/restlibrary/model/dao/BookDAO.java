@@ -51,10 +51,10 @@ public class BookDAO extends CrudDAO<Book, Long> implements IBookDAO {
             predicates.add(cb.equal(booksRoot.get("genre"), filter.getGenre()));
         }
         if (filter.getFrom() != null) {
-            predicates.add(cb.greaterThan(booksRoot.get("releaseDate"), filter.getFrom()));
+            predicates.add(cb.greaterThanOrEqualTo(booksRoot.get("releaseDate"), filter.getFrom()));
         }
         if (filter.getTo() != null) {
-            predicates.add(cb.lessThan(booksRoot.get("releaseDate"), filter.getTo()));
+            predicates.add(cb.lessThanOrEqualTo(booksRoot.get("releaseDate"), filter.getTo()));
         }
         cq.select(booksRoot)
                 .where(predicates.toArray(new Predicate[]{}));

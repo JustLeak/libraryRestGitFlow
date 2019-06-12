@@ -1,8 +1,11 @@
 package by.intexsoft.restlibrary.configuration;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -14,7 +17,11 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
+@PropertySource("classpath:hibernate.properties")
 public class HibernateConfig {
+    @Autowired
+    private Environment env;
+
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
@@ -28,15 +35,15 @@ public class HibernateConfig {
     public DataSource dataSource() {
         MysqlDataSource dataSource = new MysqlDataSource();
         try {
-            dataSource.setUseSSL(false);
-            dataSource.setServerTimezone("UTC");
-            dataSource.setAllowPublicKeyRetrieval(true);
+            dataSource.setUseSSL(env.getProperty("datasource_use_ssl", Boolean.TYPE));
+            dataSource.setServerTimezone(env.getProperty("datasource_server_timezone"));
+            dataSource.setAllowPublicKeyRetrieval(env.getProperty("datasource_allow_public_key_retrieval", Boolean.TYPE));
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        dataSource.setUrl("jdbc:mysql://localhost:3306/library_rest_db");
-        dataSource.setUser("admin");
-        dataSource.setPassword("1111");
+        dataSource.setUrl(env.getProperty("datasource_url"));
+        dataSource.setUser(env.getProperty("datasource_user"));
+        dataSource.setPassword(env.getProperty("datasource_password"));
         return dataSource;
     }
 
@@ -49,10 +56,10 @@ public class HibernateConfig {
 
     private Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
-        hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
-        hibernateProperties.setProperty("hibernate.show_sql", "true");
-        hibernateProperties.setProperty("hibernate.format_sql", "true");
+        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        hibernateProperties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+        hibernateProperties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
         return hibernateProperties;
     }
 }

@@ -8,10 +8,15 @@ import by.intexsoft.restlibrary.service.api.IBookService;
 import by.intexsoft.restlibrary.service.api.ILocalizationService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/books")
@@ -26,10 +31,10 @@ public class BookController {
         this.localeService = localeService;
     }
 
-    @PostMapping(value = "/uploadExcelFile")
-    public String uploadExcelFile(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String lang) {
+    @PostMapping(value = "/upload")
+    public String uploadFile(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String lang) {
         try {
-            return String.format(localeService.getString("ldb", lang), bookService.uploadExcelFile(file));
+            return String.format(localeService.getString("ldb", lang), bookService.uploadFile(file));
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage(), e);
             return e.getMessage();
@@ -40,24 +45,33 @@ public class BookController {
     }
 
     @GetMapping
-    public MultiResponseList<BookDTO> getBooks(@RequestParam Map<String, String> parameters) {
-        BookFilter bookFilter = BookFilter.builder()
-                .filterByName(parameters.get("name"))
-                .filterByGenre(parameters.get("genre"))
-                .filterByStartDate(parameters.get("from"))
-                .filterByEndDate(parameters.get("to"))
-                .build();
+    public MultiResponseList<BookDTO> getBooks(BookFilter filter, @RequestParam(required = false) String lang) {
         try {
-            return new MultiResponseList<>(bookService.getAllBooksDTO(bookFilter));
+            return new MultiResponseList<>(bookService.getAllBooksDTO(filter));
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage(), e);
             return new MultiResponseList<>(e.getMessage());
-        } catch (ServiceException e) {
-            logger.error(e.getMessage(), e);
-            return new MultiResponseList<>(localeService.getString("bwns", parameters.get("lang")) + " " + localeService.getString("iid", parameters.get("lang")));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return new MultiResponseList<>(localeService.getString("bwns", parameters.get("lang")) + " " + localeService.getString("sww", parameters.get("lang")));
+            return new MultiResponseList<>(localeService.getString("bwns", lang) + " " + localeService.getString("sww", lang));
+        }
+    }
+
+    @GetMapping(value = "/download")
+    public ResponseEntity<Object> downloadFile(BookFilter filter, @RequestParam(required = false) String lang) {
+        try {
+            List<BookDTO> books = bookService.getAllBooksDTO(filter);
+            InputStreamResource resource = bookService.convertToCSV(books);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + "books.csv")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+        } catch (ServiceException e) {
+            logger.error(e.getMessage(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return new ResponseEntity<>(localeService.getString("sww", lang), HttpStatus.BAD_REQUEST);
         }
     }
 }

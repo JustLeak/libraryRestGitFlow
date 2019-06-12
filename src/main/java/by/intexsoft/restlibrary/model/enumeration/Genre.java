@@ -6,7 +6,7 @@ public enum Genre {
 
     public static Genre forString(String format) {
         for (Genre type : values()) {
-            if (type.name().equals(format)) {
+            if (type.name().equalsIgnoreCase(format)) {
                 return type;
             }
         }
