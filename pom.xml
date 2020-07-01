@@ -18,7 +18,7 @@
         <spring.version>5.1.5.RELEASE</spring.version>
         <servlet-api.version>4.0.1</servlet-api.version>
         <jackson-databind.version>2.9.8</jackson-databind.version>
-        <mcj.version>8.0.15</mcj.version>
+        <mcj.version>8.0.16</mcj.version>
         <tomcat-dbcp.version>9.0.16</tomcat-dbcp.version>
     </properties>
 
