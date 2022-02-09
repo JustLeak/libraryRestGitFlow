@@ -13,7 +13,7 @@
         <maven.compiler.release>10</maven.compiler.release>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
-        <hibernate.version>5.4.1.Final</hibernate.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
         <mysql.version>5.1.24</mysql.version>
         <spring.version>5.1.5.RELEASE</spring.version>
         <servlet-api.version>4.0.1</servlet-api.version>
